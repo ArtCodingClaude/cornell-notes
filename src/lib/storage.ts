@@ -6,7 +6,7 @@ const SETTINGS_KEY = 'cornell.settings.v1'
 export const defaultSettings: Settings = {
   themeMode: 'system',
   accent: 'indigo',
-  language: 'fr',
+  language: 'en',
   autoScale: true,
   baseFontSize: 17,
   minFontSize: 12,

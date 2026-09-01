@@ -87,6 +87,7 @@ export function SettingsView({ onBack, onImport }: Props) {
             value={settings.language}
             onChange={(language) => updateSettings({ language })}
             options={[
+              { value: 'en', label: t('lang.en') },
               { value: 'fr', label: t('lang.fr') },
               { value: 'nl', label: t('lang.nl') },
             ]}

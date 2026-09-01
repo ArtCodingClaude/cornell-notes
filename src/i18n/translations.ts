@@ -15,6 +15,7 @@ export const fr = {
   'lang.label': 'Langue',
   'lang.fr': 'Français',
   'lang.nl': 'Nederlands',
+  'lang.en': 'English',
 
   'home.intro':
     'La méthode Cornell découpe la page en trois zones : les mots-clés, les notes, et le résumé. On écrit dans la colonne large pendant le cours, on remplit les mots-clés après, et on résume à chaud. Le jour de la révision, on cache les notes et on se teste avec les mots-clés.',
@@ -197,6 +198,7 @@ export const nl: Record<TranslationKey, string> = {
   'lang.label': 'Taal',
   'lang.fr': 'Français',
   'lang.nl': 'Nederlands',
+  'lang.en': 'English',
 
   'home.intro':
     'De Cornell-methode verdeelt de pagina in drie delen: trefwoorden, notities en samenvatting. Tijdens de les schrijf je in de brede kolom, de trefwoorden vul je achteraf in, en de samenvatting schrijf je meteen erna. Bij het herhalen dek je de notities af en overhoor je jezelf met de trefwoorden.',
@@ -363,4 +365,186 @@ export const nl: Record<TranslationKey, string> = {
   'common.characters': 'tekens',
 }
 
-export const dictionaries = { fr, nl }
+
+export const en: Record<TranslationKey, string> = {
+  'app.title': 'Cornell Notes',
+  'app.tagline': 'Take notes that still earn their keep a week later.',
+
+  'nav.home': 'Home',
+  'nav.settings': 'Settings',
+  'nav.guide': 'Guide',
+  'nav.back': 'Back',
+
+  'theme.toggle': 'Switch theme',
+  'theme.light': 'Light',
+  'theme.dark': 'Dark',
+  'theme.system': 'System',
+
+  'lang.label': 'Language',
+  'lang.fr': 'Français',
+  'lang.nl': 'Nederlands',
+  'lang.en': 'English',
+
+  'home.intro':
+    'The Cornell method splits the page into three areas: cues, notes and summary. You write in the wide column during the lesson, fill in the cues afterwards, and summarise while it is still fresh. When you revise, you cover the notes and test yourself with the cues.',
+  'home.readMore': 'Read more',
+  'home.newNote': 'New note',
+  'home.upload': 'Import a note',
+  'home.yourNotes': 'Your notes',
+  'home.empty': 'No notes yet.',
+  'home.emptyHint': 'Start by creating a new note, or import one.',
+  'home.noteCountOne': 'note',
+  'home.noteCountOther': 'notes',
+  'home.search': 'Search notes…',
+  'home.noResults': 'No notes match this search.',
+
+  'diagram.title': 'How a page is laid out',
+  'diagram.cues': 'Cues',
+  'diagram.notes': 'Notes',
+  'diagram.summary': 'Summary',
+  'diagram.cuesDesc':
+    'Questions and keywords, written afterwards to test yourself.',
+  'diagram.notesDesc': 'The notes you take during the lesson or the reading.',
+  'diagram.summaryDesc': 'Two or three sentences, in your own words.',
+
+  'editor.untitled': 'Untitled note',
+  'editor.titlePlaceholder': 'Note title',
+  'editor.cuesPlaceholder':
+    'Keywords, questions…\n\nFill this in after taking your notes.',
+  'editor.notesPlaceholder':
+    'Your main notes.\n\nWrite here during the lesson, the meeting or the reading.',
+  'editor.summaryPlaceholder':
+    'Sum it up in two or three sentences, in your own words.',
+  'editor.saved': 'Saved',
+  'editor.saving': 'Saving…',
+  'editor.export': 'Export',
+  'editor.delete': 'Delete',
+  'editor.deleteConfirm': 'Delete this note permanently?',
+
+  'settings.title': 'Settings',
+  'settings.appearance': 'Appearance',
+  'settings.theme': 'Theme',
+  'settings.accent': 'Accent colour',
+  'settings.text': 'Text',
+  'settings.autoScale': 'Scale text size automatically',
+  'settings.autoScaleDesc':
+    'The text shrinks as the section fills up, and grows back when you delete.',
+  'settings.baseFontSize': 'Default size',
+  'settings.minFontSize': 'Minimum size',
+  'settings.maxFontSize': 'Maximum size',
+  'settings.layout': 'Layout',
+  'settings.cuesRatio': 'Width of the cue column',
+  'settings.shortcuts': 'Keyboard shortcuts',
+  'settings.shortcutsDesc':
+    'Click a shortcut, then press the key combination you want.',
+  'settings.recording': 'Press a key…',
+  'settings.resetShortcuts': 'Reset shortcuts',
+  'settings.data': 'Your data',
+  'settings.export': 'Export all notes',
+  'settings.exportDesc': 'Downloads a .json file containing all your notes.',
+  'settings.import': 'Import notes',
+  'settings.clear': 'Erase everything',
+  'settings.clearConfirm': 'Erase all notes? This cannot be undone.',
+  'settings.storageNote':
+    'Notes are saved in this browser only. Clear your browser data and they are gone — export them from time to time.',
+
+  'guide.title': 'Guide',
+  'guide.methodTitle': 'The Cornell method',
+  'guide.methodP1':
+    'The Cornell method was developed at Cornell University in the 1950s. The idea: a page of notes is worthless if you never read it again. So you give the page a layout that doubles as revision material.',
+  'guide.methodP2':
+    'The wide column takes the notes you write on the spot. The narrow column on the left is filled in afterwards: that is where you write the questions the notes answer. The band at the bottom takes a two- or three-sentence summary, written straight after the session.',
+  'guide.methodP3':
+    'To revise: cover the notes column, read the cues, and try to answer from memory. That is where the method pays off.',
+  'guide.featuresTitle': 'What the app does',
+  'guide.featAutoSave': 'Automatic saving',
+  'guide.featAutoSaveDesc':
+    'Everything is saved as you type, in your browser. No button to click.',
+  'guide.featScale': 'Automatic text size',
+  'guide.featScaleDesc':
+    'Each section shrinks its type as it fills up, independently of the other two. The limits are set in Settings.',
+  'guide.featKeyboard': 'Everything from the keyboard',
+  'guide.featKeyboardDesc':
+    'The app works entirely without a mouse. Tab moves to the next section, and every shortcut can be changed.',
+  'guide.featReview': 'Review mode',
+  'guide.featReviewDesc':
+    'The Review button hides the notes and the summary: all you see are your questions. You answer from memory, then reveal. This is what the Cornell method is really for.',
+  'guide.featPrint': 'Printing and PDF',
+  'guide.featPrintDesc':
+    'Ctrl+P produces a clean Cornell page, in three areas, without the buttons. Choose "Save as PDF" in the print dialog to get a file.',
+  'guide.featImport': 'Import and export',
+  'guide.featImportDesc':
+    'Notes export as .json (to keep everything) or as .md (to read them elsewhere). Both formats can be imported back.',
+  'guide.formatTitle': 'The Markdown format',
+  'guide.formatDesc':
+    'An importable .md file looks like this — the three section headings are what matters:',
+
+  'shortcuts.title': 'Keyboard shortcuts',
+  'shortcuts.gotoCues': 'Go to cues',
+  'shortcuts.gotoNotes': 'Go to notes',
+  'shortcuts.gotoSummary': 'Go to summary',
+  'shortcuts.newNote': 'New note',
+  'shortcuts.save': 'Save',
+  'shortcuts.review': 'Review mode',
+  'shortcuts.print': 'Print',
+  'shortcuts.home': 'Back to home',
+  'shortcuts.help': 'Show shortcuts',
+  'shortcuts.tab': 'Next / previous section',
+  'shortcuts.hint': 'Press ? at any time to see this list again.',
+
+  'import.title': 'Import a note',
+  'import.choose': 'Choose a file',
+  'import.drop': 'Drag a file here, or',
+  'import.formats': 'Accepted formats: .json and .md exported by this app.',
+  'import.invalid':
+    'This file could not be read. Check that it is a .json or .md exported by this app.',
+  'import.preview': 'Preview before importing',
+  'import.confirm': 'Import',
+  'import.countReadyOne': 'note ready to import',
+  'import.countReadyOther': 'notes ready to import',
+
+  'subject.label': 'Subject',
+  'subject.placeholder': 'Subject (Biology, History…)',
+  'subject.all': 'All',
+  'subject.none': 'No subject',
+
+  'review.start': 'Review',
+  'review.exit': 'Leave review mode',
+  'review.title': 'Review mode',
+  'review.intro':
+    'Read a question in the cue column, answer from memory, then reveal.',
+  'review.revealNotes': 'Reveal the notes',
+  'review.revealSummary': 'Reveal the summary',
+  'review.hideAgain': 'Hide again',
+  'review.hidden': 'Hidden',
+  'review.emptyCues':
+    'This note has no cues yet. Add some questions so you can test yourself.',
+
+  'print.action': 'Print',
+  'print.hint':
+    'Ctrl+P prints the note in three areas, without the buttons. Choose "Save as PDF" to get a file.',
+
+  'backup.title': 'Remember to export your notes',
+  'backup.bodyNever':
+    'Your notes live in this browser only and have never been exported. Clear your history and they are gone.',
+  'backup.bodyStale':
+    'Last export {days} days ago. Your notes live in this browser only.',
+  'backup.export': 'Export now',
+  'backup.snooze': 'Later',
+  'backup.lastExport': 'Last export: {days} days ago.',
+  'backup.lastExportNever': 'No export yet.',
+
+  'pwa.title': 'Install the app on your phone',
+  'pwa.ios':
+    'On iPhone: open this site in Safari, tap the Share button, then "Add to Home Screen". The app then opens full screen and works offline.',
+  'pwa.other':
+    'On Android or on a computer: the browser offers "Install" in its address bar or its menu.',
+
+  'common.cancel': 'Cancel',
+  'common.close': 'Close',
+  'common.delete': 'Delete',
+  'common.empty': '(empty)',
+  'common.characters': 'characters',
+}
+
+export const dictionaries = { en, fr, nl }

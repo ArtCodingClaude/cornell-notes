@@ -14,7 +14,7 @@ export type Section = 'cues' | 'notes' | 'summary'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
-export type Language = 'fr' | 'nl'
+export type Language = 'en' | 'fr' | 'nl'
 
 export type AccentKey =
   | 'indigo'

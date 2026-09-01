@@ -2,7 +2,7 @@
 
 Fichier de passation. À lire en premier dans une nouvelle session, avant de toucher au code.
 
-**Dernière mise à jour :** 1er septembre 2026
+**Dernière mise à jour :** 1er septembre 2026 (ajout de l’anglais)
 
 ---
 
@@ -67,15 +67,22 @@ sans erreur. C'est la **couche de données et les textes**, pas encore l'interfa
 ### `src/lib/noteFile.ts`
 - Export Markdown : la ligne de métadonnées devient `*Biologie — 2026-09-01*` quand une
   matière est renseignée, et reste `*2026-09-01*` sinon.
-- Import Markdown : cette ligne est relue et la matière récupérée.
+- ⚠️ **Import Markdown : PAS fait, contrairement à ce que disait ce fichier.** Dans
+  `markdownToNote()`, la variable `subject` est déclarée (`let subject = ''`) puis
+  jamais remplie : seule la date est extraite de la ligne de métadonnées. Une note
+  exportée en `.md` avec une matière la perd si on la réimporte. À corriger en même
+  temps que l'interface des matières (section 4.3).
 - `normalize()` (import JSON) remplit `subject: note.subject ?? ''`.
+- `headings` couvre les trois langues ; `aliases` accepte déjà les orthographes
+  anglaises (`cues`, `keywords`, `notes`, `summary`), donc un `.md` anglais se
+  réimporte correctement.
 
 ### `src/context/AppContext.tsx`
 - `createNote()` crée la note avec `subject: ''`.
 
 ### `src/i18n/translations.ts`
-- **Tous les textes des cinq fonctionnalités sont déjà écrits, en français ET en
-  néerlandais** (134 clés de chaque côté, les deux dictionnaires sont alignés).
+- **Tous les textes des cinq fonctionnalités sont déjà écrits, dans les trois langues**
+  (anglais, français, néerlandais — les trois dictionnaires sont alignés).
   Préfixes : `subject.*`, `review.*`, `print.*`, `backup.*`, `pwa.*`, plus
   `shortcuts.review`, `shortcuts.print`, `guide.featReview*`, `guide.featPrint*`.
 - Il ne reste **rien à traduire** : il suffit d'utiliser les clés existantes.
@@ -184,8 +191,17 @@ La couche de données est faite ; il reste l'interface.
 
 ## 5. Décisions déjà prises — ne pas les rouvrir
 
-- **Interface bilingue français + néerlandais**, bascule dans les réglages. Le cahier
-  des charges d'origine demandait le néerlandais seul ; l'utilisateur a choisi les deux.
+- **Interface trilingue anglais + français + néerlandais**, bascule dans les réglages.
+  **L'anglais est la langue par défaut** (`language: 'en'` dans `src/lib/storage.ts`) :
+  c'est ce que voit un nouveau visiteur. Le cahier des charges d'origine demandait le
+  néerlandais seul ; l'utilisateur a choisi les trois, anglais en tête.
+  Les trois dictionnaires sont dans `src/i18n/translations.ts`. `fr` est la source de
+  vérité du type `TranslationKey` ; `en` et `nl` sont typés
+  `Record<TranslationKey, string>`, donc **une clé oubliée casse le build** — c'est
+  voulu, ne pas relâcher ce typage.
+  Deux endroits dépendent aussi de la langue et sont typés `Record<Language, …>` pour la
+  même raison : les titres de sections Markdown (`headings` dans `src/lib/noteFile.ts`)
+  et le format des dates (`dateLocales` dans `src/components/Home.tsx`).
 - **Hébergement : GitHub Pages**, déploiement automatique par GitHub Actions.
 - **Pas de serveur, pas de comptes.** Les notes vivent dans le `localStorage` du
   navigateur. C'est assumé, et c'est la raison d'être de la fonctionnalité 5.

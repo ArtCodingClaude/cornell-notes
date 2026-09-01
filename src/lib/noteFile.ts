@@ -4,6 +4,7 @@ import { isNote } from './storage'
 
 const headings: Record<Language, { cues: string; notes: string; summary: string }> =
   {
+    en: { cues: 'Cues', notes: 'Notes', summary: 'Summary' },
     fr: { cues: 'Mots-clés', notes: 'Notes', summary: 'Résumé' },
     nl: { cues: 'Trefwoorden', notes: 'Notities', summary: 'Samenvatting' },
   }

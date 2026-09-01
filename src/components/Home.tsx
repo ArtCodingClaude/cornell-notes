@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext'
-import type { Note } from '../types'
+import type { Language, Note } from '../types'
 import { CornellDiagram } from './CornellDiagram'
 import { PlusIcon, SearchIcon, UploadIcon } from './Icons'
 import { buttonGhost, buttonPrimary, card, cx, inputBase, muted } from './ui'
+
+// Typed as a full record so adding a language fails the build until the
+// date format is filled in too, instead of silently falling back.
+const dateLocales: Record<Language, string> = {
+  en: 'en-GB',
+  fr: 'fr-BE',
+  nl: 'nl-BE',
+}
 
 type Props = {
   onOpen: (id: string) => void
@@ -141,14 +149,14 @@ function NoteCard({
   onOpen,
 }: {
   note: Note
-  language: string
+  language: Language
   untitled: string
   emptyLabel: string
   onOpen: () => void
 }) {
   const preview = note.summary.trim() || note.notes.trim() || note.cues.trim()
   const formatted = new Date(note.date + 'T00:00:00').toLocaleDateString(
-    language === 'nl' ? 'nl-NL' : 'fr-BE',
+    dateLocales[language],
     { day: 'numeric', month: 'long', year: 'numeric' },
   )
 
