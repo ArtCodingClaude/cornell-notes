@@ -3,7 +3,13 @@ import type { ReactNode } from 'react'
 import { accents, useApp } from '../context/AppContext'
 import { download, safeFilename } from '../lib/noteFile'
 import { actionOrder, eventToCombo, formatCombo } from '../lib/shortcuts'
-import type { AccentKey, ActionKey, Language, ThemeMode } from '../types'
+import type {
+  AccentKey,
+  ActionKey,
+  BulletStyle,
+  Language,
+  ThemeMode,
+} from '../types'
 import type { TranslationKey } from '../i18n/translations'
 import { BackIcon, DownloadIcon, TrashIcon, UploadIcon } from './Icons'
 import {
@@ -117,6 +123,18 @@ export function SettingsView({ onBack, onImport }: Props) {
       </Panel>
 
       <Panel title={t('settings.text')}>
+        <Row title={t('settings.bullets')} hint={t('settings.bulletsDesc')}>
+          <Segmented<BulletStyle>
+            value={settings.bulletStyle}
+            onChange={(bulletStyle) => updateSettings({ bulletStyle })}
+            options={[
+              { value: 'off', label: t('bullets.off') },
+              { value: 'dot', label: '•' },
+              { value: 'dash', label: '–' },
+            ]}
+          />
+        </Row>
+
         <label className="flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"
@@ -292,10 +310,21 @@ function Panel({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-function Row({ title, children }: { title: string; children: ReactNode }) {
+function Row({
+  title,
+  hint,
+  children,
+}: {
+  title: string
+  hint?: string
+  children: ReactNode
+}) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <span className={label}>{title}</span>
+      <span className="min-w-0">
+        <span className={label}>{title}</span>
+        {hint && <span className={cx(muted, 'block')}>{hint}</span>}
+      </span>
       {children}
     </div>
   )

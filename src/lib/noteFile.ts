@@ -1,4 +1,5 @@
 import type { Language, Note } from '../types'
+import { bulletsToMarkdown } from './bullets'
 import { makeId, todayIso } from './id'
 import { isNote } from './storage'
 
@@ -41,11 +42,13 @@ export function noteToMarkdown(note: Note, language: Language): string {
     '',
     `## ${h.cues}`,
     '',
-    note.cues.trim(),
+    // The on-screen bullets become a plain "- " list, so the file is real
+    // Markdown wherever it is opened.
+    bulletsToMarkdown(note.cues.trim()),
     '',
     `## ${h.notes}`,
     '',
-    note.notes.trim(),
+    bulletsToMarkdown(note.notes.trim()),
     '',
     `## ${h.summary}`,
     '',

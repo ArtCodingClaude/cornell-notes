@@ -1,48 +1,87 @@
-import { useMemo } from 'react'
-import type { Section, Settings } from '../types'
+import { useCallback, useLayoutEffect, useState } from 'react'
+import type { RefObject } from 'react'
+import type { Settings } from '../types'
 
 /**
- * How much text each section can hold before it starts shrinking, and at
- * what length it reaches the minimum size. The cue column is narrow, so it
- * gives up room much sooner than the main notes column.
+ * Shrinks a section's text until it actually fits its box.
+ *
+ * This used to guess from the character count against fixed thresholds, which
+ * was wrong as soon as the window was narrow, the lines wrapped, or the user
+ * changed the size limits: what matters is the room actually left, so we
+ * measure it.
  */
-const thresholds: Record<Section, { start: number; end: number }> = {
-  cues: { start: 120, end: 900 },
-  notes: { start: 400, end: 4000 },
-  summary: { start: 200, end: 1400 },
+
+/** Largest size between min and max at which the content stops overflowing. */
+function fitFontSize(
+  el: HTMLTextAreaElement,
+  min: number,
+  max: number,
+): number {
+  // Not laid out yet (hidden tab, first paint): measuring would report an
+  // overflow that is not real, so keep the largest size until it is.
+  if (el.clientHeight === 0) return max
+
+  const previousSize = el.style.fontSize
+  const previousTransition = el.style.transition
+  // The size is animated for the user; during measurement we need the layout
+  // the browser would settle on, not the frame it is currently animating.
+  el.style.transition = 'none'
+
+  const fits = (px: number) => {
+    el.style.fontSize = `${px}px`
+    return el.scrollHeight <= el.clientHeight
+  }
+
+  let result = min
+  if (fits(max)) {
+    result = max
+  } else {
+    let low = min
+    let high = max
+    while (high - low > 0.5) {
+      const mid = (low + high) / 2
+      if (fits(mid)) low = mid
+      else high = mid
+    }
+    result = Math.round(low * 10) / 10
+  }
+
+  el.style.fontSize = previousSize
+  el.style.transition = previousTransition
+  return result
 }
 
-export function autoFontSize(
-  text: string,
-  section: Section,
+export function useFitFontSize(
+  ref: RefObject<HTMLTextAreaElement | null>,
+  value: string,
   settings: Settings,
 ): number {
   const min = Math.min(settings.minFontSize, settings.maxFontSize)
   const max = Math.max(settings.minFontSize, settings.maxFontSize)
+  const base = Math.min(Math.max(settings.baseFontSize, min), max)
+  const { autoScale } = settings
 
-  if (!settings.autoScale) {
-    return Math.min(Math.max(settings.baseFontSize, min), max)
-  }
+  const [size, setSize] = useState(autoScale ? max : base)
 
-  const { start, end } = thresholds[section]
-  const length = text.length
-  if (length <= start) return max
-  if (length >= end) return min
+  const measure = useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    setSize(autoScale ? fitFontSize(el, min, max) : base)
+  }, [ref, autoScale, base, min, max])
 
-  const ratio = (length - start) / (end - start)
-  // Ease out, so the first few lines barely shrink and long notes settle
-  // gently towards the minimum instead of dropping off a cliff.
-  const eased = 1 - Math.pow(1 - ratio, 2)
-  return Math.round((max - eased * (max - min)) * 10) / 10
-}
+  useLayoutEffect(() => {
+    measure()
+  }, [measure, value])
 
-export function useAutoFontSize(
-  text: string,
-  section: Section,
-  settings: Settings,
-): number {
-  return useMemo(
-    () => autoFontSize(text, section, settings),
-    [text, section, settings],
-  )
+  // The box also changes shape when the window does, or when the cue column
+  // ratio is dragged in settings.
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => measure())
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [ref, measure])
+
+  return size
 }

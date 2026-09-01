@@ -16,6 +16,9 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 
 export type Language = 'en' | 'fr' | 'nl'
 
+/** Marker put in front of a line when automatic bullets are on. */
+export type BulletStyle = 'off' | 'dot' | 'dash'
+
 export type AccentKey =
   | 'indigo'
   | 'teal'
@@ -44,6 +47,8 @@ export type Settings = {
   minFontSize: number
   maxFontSize: number
   cuesRatio: number // width of the cue column, in percent
+  /** Automatic bullets in the cue and note columns. */
+  bulletStyle: BulletStyle
   shortcuts: Record<ActionKey, string>
   /** Timestamp of the last export, used by the backup reminder. 0 = never. */
   lastExportAt: number

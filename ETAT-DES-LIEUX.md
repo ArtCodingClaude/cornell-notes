@@ -218,6 +218,44 @@ La couche de données est faite ; il reste l'interface.
 
 ---
 
+## 5b. Puces automatiques et taille du texte (fait, testé)
+
+Deux fonctionnalités hors des cinq de la section 2, demandées en cours de route.
+
+- **Puces automatiques** — `src/lib/bullets.ts`. Entrée met un marqueur devant la ligne
+  qu'on vient de finir et en démarre un sur la suivante ; Entrée sur une puce vide sort
+  d'un niveau ; `Alt+→` / `Alt+←` changent de niveau (3 niveaux : `•` `◦` `▪`) ;
+  `Maj+Entrée` donne une ligne sans puce. **Mots-clés et Notes seulement** — le Résumé
+  est du texte rédigé, choix de l'utilisateur.
+  Le style est un réglage (`settings.bulletStyle` : `off` / `dot` / `dash`), par défaut
+  `dot`. Les marqueurs sont de **vrais caractères dans le texte** : ce qu'on voit est ce
+  qui est sauvegardé. `bulletsToMarkdown()` les reconvertit en `- ` à l'export, en
+  gardant l'indentation.
+  ⚠️ `parseBullet` accepte aussi `-` et `*`, donc une note importée d'ailleurs se
+  comporte correctement. En revanche l'import ne **normalise pas** vers le style choisi :
+  un `.md` en tirets reste en tirets dans une note réglée sur `•`. Pas gênant, pas
+  corrigé.
+
+- **Taille du texte** — `src/hooks/useAutoFontSize.ts` a été **réécrit**. Il comptait les
+  caractères contre des seuils fixes ; il **mesure maintenant le débordement réel**
+  (`scrollHeight > clientHeight`) par recherche dichotomique entre min et max, avec un
+  `ResizeObserver` pour recalculer quand la fenêtre change. L'export s'appelle
+  `useFitFontSize(ref, value, settings)`.
+  Deux points à ne pas casser : la transition CSS est **désactivée pendant la mesure**
+  (sinon on lit la frappe d'animation en cours, pas la mise en page finale) ; et si
+  `clientHeight === 0` (pas encore affiché) on renvoie `max` au lieu de conclure à un
+  débordement imaginaire.
+  Mesuré : ~10 ms par caractère dans une boîte pleine, pas de saccade.
+
+- ⚠️ **Retrait suspendu : impossible dans un `textarea`, ne pas réessayer.** Aligner la
+  deuxième ligne d'une puce longue sur le texte plutôt que sous le marqueur demande
+  `text-indent` négatif — or un `textarea` est **un seul bloc**, donc `text-indent` ne
+  tire que la toute première ligne et décale toutes les autres vers la droite. Essayé,
+  constaté à l'écran, annulé. Ce sera en revanche possible dans les `div` d'impression
+  de la fonctionnalité 4.2.
+
+---
+
 ## 6. Piège déjà rencontré — ne pas le réintroduire
 
 En v1, l'indicateur « enregistré » était mis à jour depuis un `useEffect` déclenché à

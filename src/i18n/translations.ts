@@ -57,9 +57,13 @@ export const fr = {
   'settings.theme': 'Thème',
   'settings.accent': 'Couleur d’accent',
   'settings.text': 'Texte',
+  'settings.bullets': 'Puces automatiques',
+  'settings.bulletsDesc':
+    'Entrée met une puce devant la ligne, dans les mots-clés et les notes. Alt+→ pour un sous-niveau, Maj+Entrée pour une ligne sans puce.',
+  'bullets.off': 'Aucune',
   'settings.autoScale': 'Adapter la taille du texte automatiquement',
   'settings.autoScaleDesc':
-    'Le texte rétrécit à mesure que la section se remplit, puis regrandit quand vous effacez.',
+    'Le texte rétrécit dès qu’il manque de place dans sa section, et regrandit quand vous effacez.',
   'settings.baseFontSize': 'Taille par défaut',
   'settings.minFontSize': 'Taille minimale',
   'settings.maxFontSize': 'Taille maximale',
@@ -98,6 +102,9 @@ export const fr = {
   'guide.featKeyboard': 'Tout au clavier',
   'guide.featKeyboardDesc':
     'L’app s’utilise entièrement sans souris. Tab passe d’une section à la suivante, et chaque raccourci est modifiable.',
+  'guide.featBullets': 'Puces automatiques',
+  'guide.featBulletsDesc':
+    'Dans les mots-clés et les notes, Entrée met une puce devant la ligne que vous venez de finir et en démarre une sur la suivante. Entrée sur une puce vide sort de la liste ; Alt+→ et Alt+← changent de niveau. Le style se choisit dans les réglages.',
   'guide.featReview': 'Mode révision',
   'guide.featReviewDesc':
     'Le bouton Réviser masque les notes et le résumé : vous ne voyez plus que vos questions. Vous répondez de tête, puis vous révélez. C’est là que la méthode Cornell sert vraiment.',
@@ -242,9 +249,13 @@ export const nl: Record<TranslationKey, string> = {
   'settings.theme': 'Thema',
   'settings.accent': 'Accentkleur',
   'settings.text': 'Tekst',
+  'settings.bullets': 'Automatische opsommingstekens',
+  'settings.bulletsDesc':
+    'Enter zet een opsommingsteken voor de regel, in de trefwoorden en de notities. Alt+→ voor een niveau dieper, Shift+Enter voor een regel zonder teken.',
+  'bullets.off': 'Geen',
   'settings.autoScale': 'Tekstgrootte automatisch aanpassen',
   'settings.autoScaleDesc':
-    'De tekst wordt kleiner naarmate de sectie voller wordt, en weer groter als je wist.',
+    'De tekst wordt kleiner zodra er te weinig ruimte is in de sectie, en weer groter als je wist.',
   'settings.baseFontSize': 'Standaardgrootte',
   'settings.minFontSize': 'Minimale grootte',
   'settings.maxFontSize': 'Maximale grootte',
@@ -283,6 +294,9 @@ export const nl: Record<TranslationKey, string> = {
   'guide.featKeyboard': 'Alles met het toetsenbord',
   'guide.featKeyboardDesc':
     'De app werkt volledig zonder muis. Tab springt naar de volgende sectie, en elke sneltoets is aanpasbaar.',
+  'guide.featBullets': 'Automatische opsommingstekens',
+  'guide.featBulletsDesc':
+    'In de trefwoorden en de notities zet Enter een opsommingsteken voor de regel die je net af hebt, en begint er een op de volgende. Enter op een leeg teken verlaat de lijst; Alt+→ en Alt+← wisselen van niveau. De stijl kies je bij Instellingen.',
   'guide.featReview': 'Overhoormodus',
   'guide.featReviewDesc':
     'De knop Overhoren verbergt de notities en de samenvatting: je ziet alleen nog je vragen. Je antwoordt uit je hoofd en onthult daarna. Dáár is de Cornell-methode voor bedoeld.',
@@ -426,9 +440,13 @@ export const en: Record<TranslationKey, string> = {
   'settings.theme': 'Theme',
   'settings.accent': 'Accent colour',
   'settings.text': 'Text',
+  'settings.bullets': 'Automatic bullets',
+  'settings.bulletsDesc':
+    'Enter puts a bullet in front of the line, in the cues and the notes. Alt+→ for a sub-level, Shift+Enter for a line without one.',
+  'bullets.off': 'None',
   'settings.autoScale': 'Scale text size automatically',
   'settings.autoScaleDesc':
-    'The text shrinks as the section fills up, and grows back when you delete.',
+    'The text shrinks as soon as it runs out of room in its section, and grows back when you delete.',
   'settings.baseFontSize': 'Default size',
   'settings.minFontSize': 'Minimum size',
   'settings.maxFontSize': 'Maximum size',
@@ -466,6 +484,9 @@ export const en: Record<TranslationKey, string> = {
   'guide.featKeyboard': 'Everything from the keyboard',
   'guide.featKeyboardDesc':
     'The app works entirely without a mouse. Tab moves to the next section, and every shortcut can be changed.',
+  'guide.featBullets': 'Automatic bullets',
+  'guide.featBulletsDesc':
+    'In the cues and the notes, Enter puts a bullet in front of the line you have just finished and starts one on the next. Enter on an empty bullet leaves the list; Alt+→ and Alt+← change level. The style is chosen in Settings.',
   'guide.featReview': 'Review mode',
   'guide.featReviewDesc':
     'The Review button hides the notes and the summary: all you see are your questions. You answer from memory, then reveal. This is what the Cornell method is really for.',

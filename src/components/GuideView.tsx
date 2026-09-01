@@ -16,6 +16,7 @@ export function GuideView({ onBack }: { onBack: () => void }) {
   const features: { title: TranslationKey; desc: TranslationKey }[] = [
     { title: 'guide.featAutoSave', desc: 'guide.featAutoSaveDesc' },
     { title: 'guide.featScale', desc: 'guide.featScaleDesc' },
+    { title: 'guide.featBullets', desc: 'guide.featBulletsDesc' },
     { title: 'guide.featKeyboard', desc: 'guide.featKeyboardDesc' },
     { title: 'guide.featImport', desc: 'guide.featImportDesc' },
   ]

@@ -12,6 +12,7 @@ export const defaultSettings: Settings = {
   minFontSize: 12,
   maxFontSize: 22,
   cuesRatio: 30,
+  bulletStyle: 'dot',
   shortcuts: {
     gotoCues: 'mod+1',
     gotoNotes: 'mod+2',

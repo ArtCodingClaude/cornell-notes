@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, RefObject } from 'react'
 import { useApp } from '../context/AppContext'
-import { useAutoFontSize } from '../hooks/useAutoFontSize'
+import { useFitFontSize } from '../hooks/useAutoFontSize'
+import { onEnter, onIndent } from '../lib/bullets'
 import { download, noteToMarkdown, safeFilename } from '../lib/noteFile'
 import type { Note, Section } from '../types'
 import { BackIcon, CheckIcon, DownloadIcon, TrashIcon } from './Icons'
@@ -149,6 +150,7 @@ export function Editor({ note, focusRequest, onBack }: Props) {
           placeholder={t('editor.cuesPlaceholder')}
           title={t('diagram.cues')}
           textareaRef={refs.cues}
+          bullets
           style={{ flexBasis: cuesWidth }}
           onChange={(value) => updateNote(note.id, { cues: value })}
           onFocus={() => setActive('cues')}
@@ -161,6 +163,7 @@ export function Editor({ note, focusRequest, onBack }: Props) {
           placeholder={t('editor.notesPlaceholder')}
           title={t('diagram.notes')}
           textareaRef={refs.notes}
+          bullets
           style={{ flexGrow: 1, flexBasis: 0 }}
           onChange={(value) => updateNote(note.id, { notes: value })}
           onFocus={() => setActive('notes')}
@@ -196,6 +199,7 @@ function SectionBox({
   title,
   placeholder,
   textareaRef,
+  bullets = false,
   style,
   onChange,
   onFocus,
@@ -207,14 +211,64 @@ function SectionBox({
   title: string
   placeholder: string
   textareaRef: RefObject<HTMLTextAreaElement | null>
+  bullets?: boolean
   style?: CSSProperties
   onChange: (value: string) => void
   onFocus: () => void
   onKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void
 }) {
   const { settings, t } = useApp()
-  const fontSize = useAutoFontSize(value, section, settings)
+  const fontSize = useFitFontSize(textareaRef, value, settings)
   const tone = palette[section]
+
+  // A bullet edit rewrites the whole field, so the caret has to be put back
+  // once React has rendered the new value.
+  const pendingCaret = useRef<number | null>(null)
+  useLayoutEffect(() => {
+    const caret = pendingCaret.current
+    if (caret === null) return
+    pendingCaret.current = null
+    textareaRef.current?.setSelectionRange(caret, caret)
+  }, [value, textareaRef])
+
+  const bulletsOn = bullets && settings.bulletStyle !== 'off'
+
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (bulletsOn) {
+      const el = event.currentTarget
+      const { value: text, selectionStart, selectionEnd } = el
+
+      // Shift+Enter stays a plain newline, so there is always a way out.
+      const plainEnter =
+        event.key === 'Enter' &&
+        !event.shiftKey &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey
+
+      const edit = plainEnter
+        ? onEnter(text, selectionStart, selectionEnd, settings.bulletStyle)
+        : event.altKey &&
+            (event.key === 'ArrowRight' || event.key === 'ArrowLeft')
+          ? onIndent(
+              text,
+              selectionStart,
+              selectionEnd,
+              settings.bulletStyle,
+              event.key === 'ArrowRight' ? 1 : -1,
+            )
+          : null
+
+      if (edit) {
+        event.preventDefault()
+        pendingCaret.current = edit.caret
+        onChange(edit.value)
+        return
+      }
+    }
+
+    onKeyDown(event)
+  }
 
   return (
     <section
@@ -252,7 +306,7 @@ function SectionBox({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onFocus={onFocus}
-        onKeyDown={onKeyDown}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         spellCheck
         className="section-area thin-scroll w-full flex-1 resize-none bg-transparent px-4 py-3 leading-relaxed outline-none placeholder:text-[var(--text-muted)]"
@@ -261,6 +315,10 @@ function SectionBox({
             fontSize: `${fontSize}px`,
             '--section-min-h': tone.min,
             transition: 'font-size 220ms ease',
+            // No hanging indent for wrapped bullets: a textarea is a single
+            // block, so `text-indent` would only pull back the very first
+            // line and push every later one to the right. Wrapped text lines
+            // up under the marker instead.
           } as CSSProperties
         }
       />
