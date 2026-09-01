@@ -95,24 +95,10 @@ sans erreur. C'est la **couche de données et les textes**, pas encore l'interfa
 
 ## 4. Ce qu'il RESTE À FAIRE
 
-### 4.1 — Mode révision (priorité 1)
+### 4.1 — Mode révision (priorité 1) — ✅ FAIT ET TESTÉ
 
-Dans `src/components/Editor.tsx` :
-
-- Deux états : `reviewing: boolean` et `revealed: { notes: boolean; summary: boolean }`.
-- Bouton **Réviser** dans la barre d'outils (`review.start` / `review.exit`,
-  icône `BrainIcon`).
-- En mode révision :
-  - les trois `textarea` passent en `readOnly` (éviter les modifications accidentelles) ;
-  - les sections **Notes** et **Résumé** sont masquées, chacune recouverte d'un bouton
-    plein cadre « Révéler » (`review.revealNotes`, `review.revealSummary`, `EyeIcon`) ;
-  - la colonne **Mots-clés** reste visible ;
-  - un bouton « Masquer à nouveau » (`review.hideAgain`) remet tout en place.
-- Technique du masque : garder le `textarea` dans le DOM avec
-  `style={{ visibility: 'hidden' }}` et poser un bouton en `absolute inset-0` par-dessus
-  — ça garde les hauteurs stables.
-- Si la note n'a pas de mots-clés, afficher `review.emptyCues` plutôt qu'un écran vide.
-- Câbler l'action `review` dans le `switch` des raccourcis de `src/App.tsx`.
+Implémenté dans `src/components/Editor.tsx`, conforme au plan, avec deux écarts notés
+plus bas. Détail dans la section 5c.
 
 ### 4.2 — Impression / PDF (priorité 2)
 
@@ -253,6 +239,47 @@ Deux fonctionnalités hors des cinq de la section 2, demandées en cours de rout
   tire que la toute première ligne et décale toutes les autres vers la droite. Essayé,
   constaté à l'écran, annulé. Ce sera en revanche possible dans les `div` d'impression
   de la fonctionnalité 4.2.
+
+---
+
+## 5c. Mode révision (fonctionnalité 1) — fait, testé
+
+Tout est dans `src/components/Editor.tsx`, sauf le raccourci.
+
+- États : `reviewing: boolean` et `revealed: { notes, summary }`. Remis à zéro en
+  entrant **et** en sortant, et à chaque changement de `note.id` (sinon on rouvre une
+  autre note en pleine révision).
+- Les trois `textarea` passent en `readOnly` ; les puces automatiques sont désactivées
+  avec elles (`bulletsOn` inclut `!readOnly`).
+- Notes et Résumé sont recouverts d'un bouton plein cadre. Le `textarea` reste dans le
+  flux en `visibility: hidden` — **vérifié : les hauteurs ne bougent pas** (384 / 384 /
+  144 avant comme pendant).
+- Le compteur de caractères de l'en-tête est remplacé par `review.hidden` quand la
+  section est couverte : sinon il annonce la longueur de la réponse.
+- `move()` (Tab entre sections) **saute les sections couvertes**, sinon le curseur
+  atterrit dans un `textarea` invisible.
+
+**Deux écarts par rapport au plan d'origine :**
+
+1. **Pas de `BrainIcon`.** À 20px il se lit comme un rectangle barré — le tracé a une
+   ligne verticale au centre. Remplacé par la paire `EyeOffIcon` (activer = masquer) /
+   `EyeIcon` (quitter = tout remontrer), cohérente avec les boutons « Révéler ».
+   `BrainIcon` reste dans `Icons.tsx`, inutilisé.
+2. **Le raccourci passe par un compteur.** `App.tsx` ne connaît pas l'état de l'éditeur ;
+   l'action `review` incrémente `reviewRequest`, et l'éditeur compare avec la dernière
+   valeur traitée (`useRef`) pour ne pas se déclencher au montage. Même principe que
+   `focusRequest`, qui existait déjà. **`view` a dû être ajouté aux dépendances** de
+   l'effet des raccourcis dans `App.tsx`.
+
+**Vérifié dans Edge** (masquage, révélation section par section, « Masquer à nouveau »,
+`Ctrl+R` dans les deux sens, impossibilité d'éditer pendant la révision, réinitialisation
+au changement de note, note sans mots-clés, affichage 390px) — 0 erreur console.
+`Ctrl+R` : le `preventDefault` empêche bien le rechargement de Chromium.
+
+⚠️ **Piège de test, pas un bug de l'app** : la `TopBar` est `sticky top-0 z-20`. Quand
+Puppeteer fait défiler un bouton de la barre d'outils pour cliquer dessus, il le place
+**sous** l'en-tête et le clic atterrit sur l'en-tête. Faire `window.scrollTo(0, 0)` avant
+de cliquer, ou cliquer via `page.mouse.click()` sur une position vérifiée.
 
 ---
 

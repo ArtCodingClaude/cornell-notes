@@ -19,6 +19,9 @@ export default function App() {
   const [showImport, setShowImport] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [focusRequest, setFocusRequest] = useState<FocusRequest | null>(null)
+  // Bumped by the shortcut to ask the open editor to flip review mode. The
+  // editor owns the state; this is only the request to toggle it.
+  const [reviewRequest, setReviewRequest] = useState(0)
 
   const openNote = useMemo(
     () => notes.find((note) => note.id === openId) ?? null,
@@ -89,6 +92,9 @@ export default function App() {
         case 'save':
           flushSave()
           break
+        case 'review':
+          if (view === 'editor') setReviewRequest((current) => current + 1)
+          break
         case 'home':
           if (showShortcuts) setShowShortcuts(false)
           else if (showImport) setShowImport(false)
@@ -110,6 +116,7 @@ export default function App() {
     goHome,
     showShortcuts,
     showImport,
+    view,
   ])
 
   return (
@@ -140,6 +147,7 @@ export default function App() {
           <Editor
             note={openNote}
             focusRequest={focusRequest}
+            reviewRequest={reviewRequest}
             onBack={goHome}
           />
         )}

@@ -17,6 +17,7 @@ export function GuideView({ onBack }: { onBack: () => void }) {
     { title: 'guide.featAutoSave', desc: 'guide.featAutoSaveDesc' },
     { title: 'guide.featScale', desc: 'guide.featScaleDesc' },
     { title: 'guide.featBullets', desc: 'guide.featBulletsDesc' },
+    { title: 'guide.featReview', desc: 'guide.featReviewDesc' },
     { title: 'guide.featKeyboard', desc: 'guide.featKeyboardDesc' },
     { title: 'guide.featImport', desc: 'guide.featImportDesc' },
   ]
