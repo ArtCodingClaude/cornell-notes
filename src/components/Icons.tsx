@@ -112,6 +112,50 @@ export const CheckIcon = (p: IconProps) => (
   </Svg>
 )
 
+export const EyeIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </Svg>
+)
+
+export const EyeOffIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 3l18 18" />
+    <path d="M10.6 6.1A9.9 9.9 0 0 1 12 6c6.4 0 10 6 10 6a17 17 0 0 1-3.3 4M6.6 7.7A17 17 0 0 0 2 12s3.6 6 10 6a9.7 9.7 0 0 0 4.2-.9" />
+    <path d="M9.9 10.1a3 3 0 0 0 4.1 4.2" />
+  </Svg>
+)
+
+export const BrainIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9.5 3A2.5 2.5 0 0 0 7 5.5 2.5 2.5 0 0 0 5 8a2.5 2.5 0 0 0 .5 1.5A2.5 2.5 0 0 0 5 12a2.5 2.5 0 0 0 1.5 2.3A2.5 2.5 0 0 0 9 18a2.5 2.5 0 0 0 3-.5V3.5A2.5 2.5 0 0 0 9.5 3Z" />
+    <path d="M14.5 3A2.5 2.5 0 0 1 17 5.5 2.5 2.5 0 0 1 19 8a2.5 2.5 0 0 1-.5 1.5A2.5 2.5 0 0 1 19 12a2.5 2.5 0 0 1-1.5 2.3A2.5 2.5 0 0 1 15 18a2.5 2.5 0 0 1-3-.5" />
+  </Svg>
+)
+
+export const PrinterIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 9V3h12v6" />
+    <path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" />
+    <rect x="6" y="14" width="12" height="7" rx="1" />
+  </Svg>
+)
+
+export const TagIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z" />
+    <circle cx="7.5" cy="7.5" r="1.3" />
+  </Svg>
+)
+
+export const ShieldIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3l8 3v6c0 4.5-3.2 7.9-8 9-4.8-1.1-8-4.5-8-9V6l8-3Z" />
+    <path d="m9 12 2 2 4-4" />
+  </Svg>
+)
+
 export const CloseIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M6 6l12 12M18 6 6 18" />

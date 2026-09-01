@@ -97,6 +97,12 @@ export const fr = {
   'guide.featKeyboard': 'Tout au clavier',
   'guide.featKeyboardDesc':
     'L’app s’utilise entièrement sans souris. Tab passe d’une section à la suivante, et chaque raccourci est modifiable.',
+  'guide.featReview': 'Mode révision',
+  'guide.featReviewDesc':
+    'Le bouton Réviser masque les notes et le résumé : vous ne voyez plus que vos questions. Vous répondez de tête, puis vous révélez. C’est là que la méthode Cornell sert vraiment.',
+  'guide.featPrint': 'Impression et PDF',
+  'guide.featPrintDesc':
+    'Ctrl+P sort une page Cornell propre, en trois zones, sans les boutons. « Enregistrer en PDF » dans la fenêtre d’impression donne un fichier.',
   'guide.featImport': 'Import et export',
   'guide.featImportDesc':
     'Les notes s’exportent en .json (pour tout récupérer) ou en .md (pour les lire ailleurs). Les deux formats se réimportent.',
@@ -110,6 +116,8 @@ export const fr = {
   'shortcuts.gotoSummary': 'Aller au résumé',
   'shortcuts.newNote': 'Nouvelle note',
   'shortcuts.save': 'Enregistrer',
+  'shortcuts.review': 'Mode révision',
+  'shortcuts.print': 'Imprimer',
   'shortcuts.home': 'Retour à l’accueil',
   'shortcuts.help': 'Afficher les raccourcis',
   'shortcuts.tab': 'Section suivante / précédente',
@@ -125,6 +133,43 @@ export const fr = {
   'import.confirm': 'Importer',
   'import.countReadyOne': 'note prête à être importée',
   'import.countReadyOther': 'notes prêtes à être importées',
+
+'subject.label': 'Matière',
+  'subject.placeholder': 'Matière (Biologie, Histoire…)',
+  'subject.all': 'Toutes',
+  'subject.none': 'Sans matière',
+
+  'review.start': 'Réviser',
+  'review.exit': 'Quitter la révision',
+  'review.title': 'Mode révision',
+  'review.intro':
+    'Lisez une question dans la colonne des mots-clés, répondez de tête, puis révélez.',
+  'review.revealNotes': 'Révéler les notes',
+  'review.revealSummary': 'Révéler le résumé',
+  'review.hideAgain': 'Masquer à nouveau',
+  'review.hidden': 'Masqué',
+  'review.emptyCues':
+    'Cette note n’a pas encore de mots-clés. Ajoutez-y des questions pour pouvoir vous tester.',
+
+  'print.action': 'Imprimer',
+  'print.hint':
+    'Ctrl+P imprime la note en trois zones, sans les boutons. Choisissez « Enregistrer en PDF » pour obtenir un fichier.',
+
+  'backup.title': 'Pensez à exporter vos notes',
+  'backup.bodyNever':
+    'Vos notes vivent uniquement dans ce navigateur et n’ont jamais été exportées. Un historique vidé et elles disparaissent.',
+  'backup.bodyStale':
+    'Dernier export il y a {days} jours. Vos notes vivent uniquement dans ce navigateur.',
+  'backup.export': 'Exporter maintenant',
+  'backup.snooze': 'Plus tard',
+  'backup.lastExport': 'Dernier export : il y a {days} jours.',
+  'backup.lastExportNever': 'Aucun export pour le moment.',
+
+  'pwa.title': 'Installer l’app sur votre téléphone',
+  'pwa.ios':
+    'Sur iPhone : ouvrez ce site dans Safari, touchez le bouton Partager, puis « Sur l’écran d’accueil ». L’app s’ouvre alors en plein écran et fonctionne sans connexion.',
+  'pwa.other':
+    'Sur Android ou sur ordinateur : le navigateur propose « Installer » dans sa barre d’adresse ou son menu.',
 
   'common.cancel': 'Annuler',
   'common.close': 'Fermer',
@@ -236,6 +281,12 @@ export const nl: Record<TranslationKey, string> = {
   'guide.featKeyboard': 'Alles met het toetsenbord',
   'guide.featKeyboardDesc':
     'De app werkt volledig zonder muis. Tab springt naar de volgende sectie, en elke sneltoets is aanpasbaar.',
+  'guide.featReview': 'Overhoormodus',
+  'guide.featReviewDesc':
+    'De knop Overhoren verbergt de notities en de samenvatting: je ziet alleen nog je vragen. Je antwoordt uit je hoofd en onthult daarna. Dáár is de Cornell-methode voor bedoeld.',
+  'guide.featPrint': 'Afdrukken en pdf',
+  'guide.featPrintDesc':
+    'Ctrl+P levert een nette Cornell-pagina op, in drie zones, zonder knoppen. Kies "Opslaan als pdf" in het afdrukvenster voor een bestand.',
   'guide.featImport': 'Importeren en exporteren',
   'guide.featImportDesc':
     'Notities exporteer je als .json (om alles te bewaren) of als .md (om ze elders te lezen). Beide formaten kun je weer importeren.',
@@ -249,6 +300,8 @@ export const nl: Record<TranslationKey, string> = {
   'shortcuts.gotoSummary': 'Naar samenvatting',
   'shortcuts.newNote': 'Nieuwe notitie',
   'shortcuts.save': 'Opslaan',
+  'shortcuts.review': 'Overhoormodus',
+  'shortcuts.print': 'Afdrukken',
   'shortcuts.home': 'Terug naar start',
   'shortcuts.help': 'Sneltoetsen tonen',
   'shortcuts.tab': 'Volgende / vorige sectie',
@@ -265,6 +318,43 @@ export const nl: Record<TranslationKey, string> = {
   'import.confirm': 'Importeren',
   'import.countReadyOne': 'notitie klaar om te importeren',
   'import.countReadyOther': 'notities klaar om te importeren',
+
+'subject.label': 'Vak',
+  'subject.placeholder': 'Vak (Biologie, Geschiedenis…)',
+  'subject.all': 'Alle',
+  'subject.none': 'Zonder vak',
+
+  'review.start': 'Overhoren',
+  'review.exit': 'Overhoren stoppen',
+  'review.title': 'Overhoormodus',
+  'review.intro':
+    'Lees een vraag in de trefwoordenkolom, antwoord uit je hoofd en onthul daarna.',
+  'review.revealNotes': 'Notities tonen',
+  'review.revealSummary': 'Samenvatting tonen',
+  'review.hideAgain': 'Weer verbergen',
+  'review.hidden': 'Verborgen',
+  'review.emptyCues':
+    'Deze notitie heeft nog geen trefwoorden. Voeg er vragen aan toe om jezelf te kunnen overhoren.',
+
+  'print.action': 'Afdrukken',
+  'print.hint':
+    'Ctrl+P drukt de notitie af in drie zones, zonder knoppen. Kies "Opslaan als pdf" voor een bestand.',
+
+  'backup.title': 'Vergeet je notities niet te exporteren',
+  'backup.bodyNever':
+    'Je notities staan alleen in deze browser en zijn nog nooit geëxporteerd. Wis je geschiedenis en ze zijn weg.',
+  'backup.bodyStale':
+    'Laatste export {days} dagen geleden. Je notities staan alleen in deze browser.',
+  'backup.export': 'Nu exporteren',
+  'backup.snooze': 'Later',
+  'backup.lastExport': 'Laatste export: {days} dagen geleden.',
+  'backup.lastExportNever': 'Nog geen export.',
+
+  'pwa.title': 'De app op je telefoon installeren',
+  'pwa.ios':
+    'Op iPhone: open deze site in Safari, tik op de deelknop en daarna op "Zet op beginscherm". De app opent dan schermvullend en werkt zonder verbinding.',
+  'pwa.other':
+    'Op Android of op de computer: de browser biedt "Installeren" aan in de adresbalk of in het menu.',
 
   'common.cancel': 'Annuleren',
   'common.close': 'Sluiten',

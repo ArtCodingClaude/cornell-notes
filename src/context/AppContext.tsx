@@ -164,6 +164,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const note: Note = {
       id: makeId(),
       title: '',
+      subject: '',
       date: todayIso(),
       cues: '',
       notes: '',

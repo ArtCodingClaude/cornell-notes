@@ -20,7 +20,11 @@ export const defaultSettings: Settings = {
     save: 'mod+s',
     home: 'escape',
     help: '?',
+    review: 'mod+r',
+    print: 'mod+p',
   },
+  lastExportAt: 0,
+  backupSnoozedUntil: 0,
 }
 
 function safeParse<T>(raw: string | null, fallback: T): T {
@@ -34,7 +38,9 @@ function safeParse<T>(raw: string | null, fallback: T): T {
 
 export function loadNotes(): Note[] {
   const notes = safeParse<Note[]>(localStorage.getItem(NOTES_KEY), [])
-  return Array.isArray(notes) ? notes.filter(isNote) : []
+  if (!Array.isArray(notes)) return []
+  // Notes written before subjects existed have no `subject` field.
+  return notes.filter(isNote).map((note) => ({ ...note, subject: note.subject ?? '' }))
 }
 
 export function saveNotes(notes: Note[]): void {

@@ -36,7 +36,7 @@ export function noteToMarkdown(note: Note, language: Language): string {
   return [
     `# ${note.title || 'Cornell'}`,
     '',
-    `*${note.date}*`,
+    note.subject ? `*${note.subject} — ${note.date}*` : `*${note.date}*`,
     '',
     `## ${h.cues}`,
     '',
@@ -62,6 +62,7 @@ export function markdownToNote(text: string): Note | null {
   }
   let title = ''
   let date = ''
+  let subject = ''
   let current: 'cues' | 'notes' | 'summary' | null = null
   let sawSection = false
 
@@ -96,6 +97,7 @@ export function markdownToNote(text: string): Note | null {
   return {
     id: makeId(),
     title: title || 'Cornell',
+    subject,
     date: date || todayIso(),
     cues: trim(buckets.cues),
     notes: trim(buckets.notes),
@@ -133,6 +135,7 @@ function normalize(note: Note): Note {
   return {
     id: makeId(), // fresh id, so importing twice never overwrites a note
     title: note.title || 'Cornell',
+    subject: note.subject ?? '',
     date: note.date || todayIso(),
     cues: note.cues ?? '',
     notes: note.notes ?? '',
