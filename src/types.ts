@@ -37,6 +37,8 @@ export type ActionKey =
   | 'help'
   | 'review'
   | 'print'
+  | 'undo'
+  | 'redo'
 
 export type Settings = {
   themeMode: ThemeMode

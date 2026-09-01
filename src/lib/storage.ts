@@ -23,6 +23,8 @@ export const defaultSettings: Settings = {
     help: '?',
     review: 'mod+r',
     print: 'mod+p',
+    undo: 'mod+z',
+    redo: 'mod+shift+z',
   },
   lastExportAt: 0,
   backupSnoozedUntil: 0,

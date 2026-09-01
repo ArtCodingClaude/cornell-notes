@@ -47,6 +47,14 @@ export function ShortcutsOverlay({ onClose }: { onClose: () => void }) {
               </kbd>
             </li>
           ))}
+          {/* Not configurable: it only applies while reviewing, where every
+              box is read-only and nothing else claims the key. */}
+          <li className="flex items-center justify-between gap-3 py-2">
+            <span className="text-sm">{t('shortcuts.reveal')}</span>
+            <kbd className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 font-mono text-xs">
+              {t('review.spaceKey')}
+            </kbd>
+          </li>
         </ul>
 
         <p className={cx(muted, 'mt-3')}>{t('shortcuts.hint')}</p>

@@ -1,7 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, RefObject } from 'react'
 import { useApp } from '../context/AppContext'
 import { useFitFontSize } from '../hooks/useAutoFontSize'
+import { useUndoHistory } from '../hooks/useUndoHistory'
+import type { Snapshot } from '../hooks/useUndoHistory'
 import { onEnter, onIndent } from '../lib/bullets'
 import { download, noteToMarkdown, safeFilename } from '../lib/noteFile'
 import type { Note, Section } from '../types'
@@ -17,16 +19,22 @@ import { buttonGhost, cx } from './ui'
 
 export type FocusRequest = { section: Section; nonce: number }
 
+/** A shortcut asking the open note to do something. */
+export type EditorCommand = {
+  action: 'review' | 'undo' | 'redo'
+  nonce: number
+}
+
 type Props = {
   note: Note
   focusRequest: FocusRequest | null
-  reviewRequest: number
+  command: EditorCommand | null
   onBack: () => void
 }
 
 const order: Section[] = ['cues', 'notes', 'summary']
 
-export function Editor({ note, focusRequest, reviewRequest, onBack }: Props) {
+export function Editor({ note, focusRequest, command, onBack }: Props) {
   const { updateNote, deleteNote, settings, saveState, t } = useApp()
   const [active, setActive] = useState<Section>('notes')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -51,20 +59,72 @@ export function Editor({ note, focusRequest, reviewRequest, onBack }: Props) {
     setRevealed({ notes: false, summary: false })
   }
 
-  // The review shortcut lives in App, which only bumps a counter. Comparing
-  // against the last one we handled keeps this from firing on mount.
-  const lastReviewRequest = useRef(reviewRequest)
+  // Undo history, because a controlled textarea has no usable native one.
+  const applySnapshot = useCallback(
+    (snapshot: Snapshot, field: keyof Snapshot | null) => {
+      updateNote(note.id, snapshot)
+      if (field && field !== 'title') {
+        const target = refs[field].current
+        // Put the caret back where the change was, so the next keystroke
+        // carries on from there instead of at the end of another section.
+        window.requestAnimationFrame(() => {
+          target?.focus()
+          const end = snapshot[field].length
+          target?.setSelectionRange(end, end)
+        })
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [note.id, updateNote],
+  )
+  const { undo, redo } = useUndoHistory(note, applySnapshot)
+
+  // Shortcuts live in App, which only sends a command with a nonce. Comparing
+  // against the last one handled keeps this from firing on mount.
+  const lastCommand = useRef(command)
   useEffect(() => {
-    if (reviewRequest === lastReviewRequest.current) return
-    lastReviewRequest.current = reviewRequest
-    toggleReview()
-  }, [reviewRequest])
+    if (command === lastCommand.current) return
+    lastCommand.current = command
+    if (!command) return
+    if (command.action === 'review') toggleReview()
+    if (command.action === 'undo') undo()
+    if (command.action === 'redo') redo()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [command])
 
   // Opening another note should not leave you half way through a review.
   useEffect(() => {
     setReviewing(false)
     setRevealed({ notes: false, summary: false })
   }, [note.id])
+
+  // Entering review by clicking the button leaves the focus on it, so Space
+  // would press that button again and drop straight back out. Move to the
+  // cues instead: it is what you read first anyway.
+  useEffect(() => {
+    if (!reviewing) return
+    refs.cues.current?.focus()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewing])
+
+  // One key drives the whole review loop: reveal the notes, reveal the
+  // summary, then cover both again for the next question. The next state is
+  // computed from this render's value rather than with an updater, so the
+  // same keypress arriving twice cannot skip a step.
+  useEffect(() => {
+    if (!reviewing) return
+    function onKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key !== ' ' && event.key !== 'Enter') return
+      // A focused button already answers to Space and Enter on its own.
+      if (event.target instanceof HTMLButtonElement) return
+      event.preventDefault()
+      if (!revealed.notes) setRevealed({ ...revealed, notes: true })
+      else if (!revealed.summary) setRevealed({ ...revealed, summary: true })
+      else setRevealed({ notes: false, summary: false })
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [reviewing, revealed])
 
   function isMasked(section: Section): boolean {
     if (!reviewing) return false
@@ -214,6 +274,14 @@ export function Editor({ note, focusRequest, reviewRequest, onBack }: Props) {
             <p className="text-sm text-[var(--text-muted)]">
               {note.cues.trim() ? t('review.intro') : t('review.emptyCues')}
             </p>
+            {note.cues.trim() && (
+              <p className="mt-0.5 text-sm text-[var(--text-muted)]">
+                <kbd className="rounded border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 font-mono text-xs">
+                  {t('review.spaceKey')}
+                </kbd>{' '}
+                {t('review.spaceHint')}
+              </p>
+            )}
           </div>
           {(revealed.notes || revealed.summary) && (
             <button

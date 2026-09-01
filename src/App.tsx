@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApp } from './context/AppContext'
 import { Editor } from './components/Editor'
-import type { FocusRequest } from './components/Editor'
+import type { EditorCommand, FocusRequest } from './components/Editor'
 import { GuideView } from './components/GuideView'
 import { Home } from './components/Home'
 import { ImportDialog } from './components/ImportDialog'
@@ -19,9 +19,9 @@ export default function App() {
   const [showImport, setShowImport] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [focusRequest, setFocusRequest] = useState<FocusRequest | null>(null)
-  // Bumped by the shortcut to ask the open editor to flip review mode. The
-  // editor owns the state; this is only the request to toggle it.
-  const [reviewRequest, setReviewRequest] = useState(0)
+  // Shortcuts that act on the open note. The editor owns the state; these are
+  // only requests, carrying a nonce so the same one twice still counts twice.
+  const [command, setCommand] = useState<EditorCommand | null>(null)
 
   const openNote = useMemo(
     () => notes.find((note) => note.id === openId) ?? null,
@@ -93,7 +93,11 @@ export default function App() {
           flushSave()
           break
         case 'review':
-          if (view === 'editor') setReviewRequest((current) => current + 1)
+        case 'undo':
+        case 'redo':
+          if (view === 'editor') {
+            setCommand({ action, nonce: Date.now() + Math.random() })
+          }
           break
         case 'home':
           if (showShortcuts) setShowShortcuts(false)
@@ -147,7 +151,7 @@ export default function App() {
           <Editor
             note={openNote}
             focusRequest={focusRequest}
-            reviewRequest={reviewRequest}
+            command={command}
             onBack={goHome}
           />
         )}

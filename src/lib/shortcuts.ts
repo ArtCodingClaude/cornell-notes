@@ -6,6 +6,8 @@ export const actionOrder: ActionKey[] = [
   'gotoSummary',
   'newNote',
   'save',
+  'undo',
+  'redo',
   'review',
   'print',
   'home',

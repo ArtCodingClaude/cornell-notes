@@ -283,6 +283,64 @@ de cliquer, ou cliquer via `page.mouse.click()` sur une position vérifiée.
 
 ---
 
+## 5d. Annulation et révision au clavier (fait, testé)
+
+Deux ajouts de confort demandés après le mode révision, sur la base de mesures.
+
+### Annulation par édition — `src/hooks/useUndoHistory.ts` (nouveau)
+
+**Le problème mesuré :** un `textarea` contrôlé par React n'a pas d'annulation native
+utilisable. React réécrit `value` à chaque frappe, le navigateur enregistre donc une
+entrée par caractère, et `Ctrl+Z` sur « hello world » rendait « hello worl ». Onze
+pressions pour effacer deux mots. **Ça existait depuis la v1**, ce n'est pas une
+régression des puces.
+
+**La solution :** un historique maison de `Snapshot` (`title`, `cues`, `notes`,
+`summary`). Une capture est validée après **500 ms sans frappe** — c'est ce qui fait
+qu'on annule une phrase et pas une lettre. `Ctrl+Z` / `Ctrl+Maj+Z`, tous deux
+modifiables dans les réglages (`undo` / `redo` dans `ActionKey`). Pile bornée à 100.
+
+Points à ne pas casser :
+- Le drapeau `restoring` empêche une restauration d'être relue comme une nouvelle
+  édition (sinon la pile se remplit d'elle-même).
+- Toute nouvelle frappe vide la pile de rétablissement.
+- `changedField()` sert à replacer le curseur dans la section modifiée. Sans ça, on
+  annule une modification du résumé et le curseur reste dans les notes.
+- L'historique repart de zéro à chaque changement de `note.id`.
+
+### Révision au clavier
+
+**Espace** (ou Entrée) fait tout le cycle : révèle les notes, puis le résumé, puis
+remasque tout pour la question suivante. Non configurable — n'agit qu'en révision, où
+tout est en lecture seule et où aucune autre touche ne réclame l'espace. Une ligne fixe
+l'annonce dans l'overlay `?` et le bandeau l'affiche.
+
+⚠️ **Deux pièges, tous deux corrigés, à ne pas réintroduire :**
+
+1. **Le focus restait sur le bouton « Review ».** En entrant en révision à la souris, le
+   focus reste sur le bouton cliqué ; Espace le réactivait donc et **sortait** du mode au
+   lieu de révéler. Corrigé en déplaçant le focus sur la colonne des mots-clés à
+   l'entrée. Le garde `event.target instanceof HTMLButtonElement` reste nécessaire pour
+   les boutons « Révéler ».
+2. **Pas de `setRevealed(updater)` ici.** L'état suivant est calculé à partir de la
+   valeur du rendu courant, avec `revealed` dans les dépendances de l'effet. Une même
+   pression arrivant deux fois recalcule alors la même chose, au lieu de sauter une
+   étape en chaînant les mises à jour.
+
+### Mesures de performance (pour ne pas réoptimiser à l'aveugle)
+
+- Frappe : **16,7 ms médian** — soit une image à 60 i/s, le minimum physique. La mise à
+  l'échelle automatique coûte **3 ms dans le pire cas**. Rien à optimiser.
+- Recherche sur l'accueil avec **120 notes : 40 à 58 ms par lettre**, visible. Le
+  `useMemo` de `Home.tsx` concatène titre + mots-clés + notes + résumé de chaque note à
+  chaque frappe. À différer (150 ms) le jour où ça gêne — pas avant.
+- `localStorage` : 417 kB pour 120 notes bien remplies. La limite est autour de 5 Mo.
+
+**Restent proposés, non faits :** note suivante/précédente depuis l'éditeur, recherche
+différée, fondu à la révélation.
+
+---
+
 ## 6. Piège déjà rencontré — ne pas le réintroduire
 
 En v1, l'indicateur « enregistré » était mis à jour depuis un `useEffect` déclenché à
