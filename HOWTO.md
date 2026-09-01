@@ -59,6 +59,16 @@ atterrissent dans `node_modules/`, un dossier qui n'est jamais envoyé sur GitHu
 
 ---
 
+## L'adresse publique du site
+
+**https://artcodingclaude.github.io/cornell-notes/**
+
+Cette adresse marche depuis n'importe quel ordinateur, sans rien installer. Attention :
+les notes restent dans le navigateur de chaque machine (voir la dernière section), donc
+un autre ordinateur démarre avec une liste vide.
+
+---
+
 ## Publier une nouvelle version en ligne
 
 Le site est publié automatiquement. Il suffit d'envoyer le code sur GitHub :
@@ -72,6 +82,17 @@ git push
 GitHub reconstruit et republie le site tout seul, en une ou deux minutes.
 
 Pour suivre l'avancement : onglet **Actions** sur la page GitHub du projet.
+
+**Une seule branche est publiée : `main`.** Si tu travailles sur une autre *branch* (une
+copie du code où on peut expérimenter sans casser la version qui marche), le site en
+ligne ne bougera pas tant que ce travail n'est pas ramené sur `main` :
+
+```
+git checkout main
+git merge nom-de-la-branche
+git push
+git checkout nom-de-la-branche
+```
 
 ---
 
