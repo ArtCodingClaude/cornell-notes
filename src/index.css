@@ -1,0 +1,135 @@
+@import 'tailwindcss';
+
+/* Dark mode is driven by a class on <html>, not by the OS alone, so the
+   user's explicit choice in Settings can win over the system setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f6f4ef;
+  --bg-glow-a: #e6ecff;
+  --bg-glow-b: #fdeee6;
+  --surface: #ffffff;
+  --surface-2: #f2efe8;
+  --border: #e2ddd2;
+  --border-strong: #cfc8b9;
+  --text: #24211c;
+  --text-muted: #6d675d;
+  --shadow: 0 1px 2px rgb(36 33 28 / 0.05), 0 8px 24px -12px rgb(36 33 28 / 0.18);
+
+  /* One fixed colour per Cornell section, so the three-way split stays
+     recognisable no matter which accent colour is picked. */
+  --cue: #7c3aed;
+  --cue-soft: #f3ecff;
+  --note: #1d4ed8;
+  --note-soft: #e8effd;
+  --sum: #0f766e;
+  --sum-soft: #e2f5f1;
+
+  --accent: #4f46e5;
+  --accent-soft: #ebe9fe;
+  --accent-text: #ffffff;
+
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #14161c;
+  --bg-glow-a: #1c2338;
+  --bg-glow-b: #2a1f2b;
+  --surface: #1c1f27;
+  --surface-2: #232733;
+  --border: #2f3441;
+  --border-strong: #454c5e;
+  --text: #eceef3;
+  --text-muted: #9aa1b1;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -16px rgb(0 0 0 / 0.7);
+
+  --cue: #c4b0ff;
+  --cue-soft: #2a2440;
+  --note: #8fb4ff;
+  --note-soft: #1e2740;
+  --sum: #6ee7d0;
+  --sum-soft: #16302e;
+
+  --accent: #8b8bf7;
+  --accent-soft: #262a45;
+  --accent-text: #10121a;
+
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(60rem 40rem at 12% -10%, var(--bg-glow-a), transparent 60%),
+    radial-gradient(50rem 34rem at 96% 0%, var(--bg-glow-b), transparent 55%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus ring used everywhere, so keyboard users always know where they are. */
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Note sections stay compact on a phone and take their full height on a
+   wide screen, where the three-part layout sits side by side. */
+.section-area {
+  min-height: 9rem;
+}
+
+@media (min-width: 1024px) {
+  .section-area {
+    min-height: var(--section-min-h, 9rem);
+  }
+}
+
+/* Slim scrollbars inside the note sections. */
+.thin-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fade-up {
+  animation: fade-up 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
