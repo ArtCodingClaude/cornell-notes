@@ -18,6 +18,9 @@ export default function App() {
   const [openId, setOpenId] = useState<string | null>(null)
   const [showImport, setShowImport] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  // Full-screen writing. It lives here rather than in the editor because the
+  // top bar has to go away with it.
+  const [focusMode, setFocusMode] = useState(false)
   const [focusRequest, setFocusRequest] = useState<FocusRequest | null>(null)
   // Shortcuts that act on the open note. The editor owns the state; these are
   // only requests, carrying a nonce so the same one twice still counts twice.
@@ -35,6 +38,12 @@ export default function App() {
       setOpenId(null)
     }
   }, [view, openId, openNote])
+
+  // Leaving the note by any route — back, delete, a new note — gives the
+  // buttons back, so no other view can end up without its top bar.
+  useEffect(() => {
+    if (view !== 'editor') setFocusMode(false)
+  }, [view])
 
   const startNote = useCallback(() => {
     const note = createNote()
@@ -100,7 +109,10 @@ export default function App() {
           }
           break
         case 'home':
-          if (showShortcuts) setShowShortcuts(false)
+          // Escape peels one layer off at a time: full screen first, so it
+          // never closes the note you were writing in.
+          if (focusMode) setFocusMode(false)
+          else if (showShortcuts) setShowShortcuts(false)
           else if (showImport) setShowImport(false)
           else goHome()
           break
@@ -120,19 +132,22 @@ export default function App() {
     goHome,
     showShortcuts,
     showImport,
+    focusMode,
     view,
   ])
 
   return (
     <div className="min-h-full">
-      <TopBar
-        view={view}
-        onNavigate={(next) => {
-          if (next === 'home') goHome()
-          else setView(next)
-        }}
-        onShowShortcuts={() => setShowShortcuts(true)}
-      />
+      {!focusMode && (
+        <TopBar
+          view={view}
+          onNavigate={(next) => {
+            if (next === 'home') goHome()
+            else setView(next)
+          }}
+          onShowShortcuts={() => setShowShortcuts(true)}
+        />
+      )}
 
       <main>
         {view === 'home' && (
@@ -152,6 +167,8 @@ export default function App() {
             note={openNote}
             focusRequest={focusRequest}
             command={command}
+            fullscreen={focusMode}
+            onFullscreen={setFocusMode}
             onBack={goHome}
           />
         )}

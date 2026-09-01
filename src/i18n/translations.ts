@@ -51,6 +51,9 @@ export const fr = {
   'editor.export': 'Exporter',
   'editor.delete': 'Supprimer',
   'editor.deleteConfirm': 'Supprimer définitivement cette note ?',
+  'editor.fullscreen': 'Plein écran',
+  'editor.fullscreenExit': 'Quitter le plein écran',
+  'editor.fullscreenHint': 'Échap pour revenir',
 
   'settings.title': 'Réglages',
   'settings.appearance': 'Apparence',
@@ -249,6 +252,9 @@ export const nl: Record<TranslationKey, string> = {
   'editor.export': 'Exporteren',
   'editor.delete': 'Verwijderen',
   'editor.deleteConfirm': 'Deze notitie definitief verwijderen?',
+  'editor.fullscreen': 'Volledig scherm',
+  'editor.fullscreenExit': 'Volledig scherm sluiten',
+  'editor.fullscreenHint': 'Esc om terug te komen',
 
   'settings.title': 'Instellingen',
   'settings.appearance': 'Weergave',
@@ -446,6 +452,9 @@ export const en: Record<TranslationKey, string> = {
   'editor.export': 'Export',
   'editor.delete': 'Delete',
   'editor.deleteConfirm': 'Delete this note permanently?',
+  'editor.fullscreen': 'Full screen',
+  'editor.fullscreenExit': 'Leave full screen',
+  'editor.fullscreenHint': 'Esc to come back',
 
   'settings.title': 'Settings',
   'settings.appearance': 'Appearance',

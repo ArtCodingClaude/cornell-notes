@@ -11,11 +11,13 @@ import {
   BackIcon,
   CheckIcon,
   DownloadIcon,
+  ExpandIcon,
   EyeIcon,
   EyeOffIcon,
+  ShrinkIcon,
   TrashIcon,
 } from './Icons'
-import { buttonGhost, cx } from './ui'
+import { buttonGhost, cx, iconButton } from './ui'
 
 export type FocusRequest = { section: Section; nonce: number }
 
@@ -29,23 +31,62 @@ type Props = {
   note: Note
   focusRequest: FocusRequest | null
   command: EditorCommand | null
+  /** Note alone on the screen, every button hidden but the way out. */
+  fullscreen: boolean
+  onFullscreen: (next: boolean) => void
   onBack: () => void
 }
 
 const order: Section[] = ['cues', 'notes', 'summary']
 
-export function Editor({ note, focusRequest, command, onBack }: Props) {
+export function Editor({
+  note,
+  focusRequest,
+  command,
+  fullscreen,
+  onFullscreen,
+  onBack,
+}: Props) {
   const { updateNote, deleteNote, settings, saveState, t } = useApp()
   const [active, setActive] = useState<Section>('notes')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [reviewing, setReviewing] = useState(false)
   const [revealed, setRevealed] = useState({ notes: false, summary: false })
 
+  const rootRef = useRef<HTMLDivElement>(null)
+
   const refs = {
     cues: useRef<HTMLTextAreaElement>(null),
     notes: useRef<HTMLTextAreaElement>(null),
     summary: useRef<HTMLTextAreaElement>(null),
   }
+
+  // Ask the browser for real fullscreen on the note element itself. Handing it
+  // this element rather than the page is what takes the top bar with it:
+  // fullscreen paints one element and its children, and nothing else.
+  useEffect(() => {
+    const el = rootRef.current
+    if (fullscreen) {
+      // Refused in an iframe, and unsupported on an iPhone. The layout below
+      // still fills the window, which is the point; only the browser's own
+      // bars stay.
+      if (el?.requestFullscreen && !document.fullscreenElement) {
+        void el.requestFullscreen().catch(() => {})
+      }
+    } else if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {})
+    }
+  }, [fullscreen])
+
+  // Escape and F11 leave fullscreen behind our back, so follow the browser
+  // rather than assume our own state is still true.
+  useEffect(() => {
+    function onChange() {
+      if (!document.fullscreenElement) onFullscreen(false)
+    }
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [onFullscreen])
 
   // A shortcut elsewhere in the app asked us to jump to a section.
   useEffect(() => {
@@ -168,8 +209,37 @@ export function Editor({ note, focusRequest, command, onBack }: Props) {
   const cuesWidth = `${settings.cuesRatio}%`
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 pb-16 pt-6 sm:px-6">
-      <div className="flex flex-wrap items-center gap-2">
+    <div
+      ref={rootRef}
+      className={cx(
+        'flex flex-col',
+        fullscreen
+          ? 'note-fullscreen gap-3 p-3 sm:p-4'
+          : 'mx-auto max-w-6xl gap-4 px-4 pb-16 pt-6 sm:px-6',
+      )}
+    >
+      {fullscreen && (
+        <div className="flex shrink-0 items-center justify-end">
+          <button
+            type="button"
+            onClick={() => onFullscreen(false)}
+            className={cx(iconButton, 'h-9 w-9 opacity-50 hover:opacity-100')}
+            title={`${t('editor.fullscreenExit')} — ${t('editor.fullscreenHint')}`}
+            aria-label={t('editor.fullscreenExit')}
+          >
+            <ShrinkIcon className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Hidden rather than unmounted in fullscreen: `display: none` also takes
+          these buttons out of the tab order, and the note keeps its state. */}
+      <div
+        className={cx(
+          'flex flex-wrap items-center gap-2',
+          fullscreen && 'hidden',
+        )}
+      >
         <button type="button" onClick={onBack} className={cx(buttonGhost, 'px-3 py-2')}>
           <BackIcon className="h-5 w-5" />
           <span className="hidden sm:inline">{t('nav.back')}</span>
@@ -215,6 +285,16 @@ export function Editor({ note, focusRequest, command, onBack }: Props) {
           <span className="hidden sm:inline">
             {reviewing ? t('review.exit') : t('review.start')}
           </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onFullscreen(true)}
+          className={cx(buttonGhost, 'px-3 py-2')}
+          title={`${t('editor.fullscreen')} — ${t('editor.fullscreenHint')}`}
+        >
+          <ExpandIcon className="h-5 w-5" />
+          <span className="hidden sm:inline">{t('editor.fullscreen')}</span>
         </button>
 
         <button
@@ -296,7 +376,12 @@ export function Editor({ note, focusRequest, command, onBack }: Props) {
         </div>
       )}
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow)] sm:flex-row sm:items-center">
+      <div
+        className={cx(
+          'flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow)] sm:flex-row sm:items-center',
+          fullscreen && 'hidden',
+        )}
+      >
         <input
           value={note.title}
           onChange={(event) => updateNote(note.id, { title: event.target.value })}
@@ -311,7 +396,7 @@ export function Editor({ note, focusRequest, command, onBack }: Props) {
         />
       </div>
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
+      <div className="note-row flex flex-col gap-3 lg:flex-row lg:items-stretch">
         <SectionBox
           section="cues"
           value={note.cues}
@@ -347,6 +432,7 @@ export function Editor({ note, focusRequest, command, onBack }: Props) {
 
       <SectionBox
         section="summary"
+        className="note-summary"
         value={note.summary}
         active={active === 'summary'}
         placeholder={t('editor.summaryPlaceholder')}
@@ -382,6 +468,7 @@ function SectionBox({
   masked = false,
   revealLabel,
   onReveal,
+  className,
   style,
   onChange,
   onFocus,
@@ -398,6 +485,7 @@ function SectionBox({
   masked?: boolean
   revealLabel?: string
   onReveal?: () => void
+  className?: string
   style?: CSSProperties
   onChange: (value: string) => void
   onFocus: () => void
@@ -460,6 +548,7 @@ function SectionBox({
     <section
       className={cx(
         'relative flex min-w-0 flex-col rounded-2xl border-2 bg-[var(--surface)] transition-[border-color,box-shadow] duration-200',
+        className,
       )}
       style={{
         ...style,
