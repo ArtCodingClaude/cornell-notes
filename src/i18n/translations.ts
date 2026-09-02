@@ -62,7 +62,7 @@ export const fr = {
   'settings.text': 'Texte',
   'settings.bullets': 'Puces automatiques',
   'settings.bulletsDesc':
-    'Entrée met une puce devant la ligne, dans les mots-clés et les notes. Alt+→ pour un sous-niveau, Maj+Entrée pour une ligne sans puce.',
+    'Entrée met une puce devant la ligne, dans les mots-clés et les notes. Alt+→ pour un sous-niveau, Maj+Entrée pour une ligne sans puce. Avec « 1. », les points principaux sont numérotés et les sous-niveaux restent des puces.',
   'bullets.off': 'Aucune',
   'settings.autoScale': 'Adapter la taille du texte automatiquement',
   'settings.autoScaleDesc':
@@ -263,7 +263,7 @@ export const nl: Record<TranslationKey, string> = {
   'settings.text': 'Tekst',
   'settings.bullets': 'Automatische opsommingstekens',
   'settings.bulletsDesc':
-    'Enter zet een opsommingsteken voor de regel, in de trefwoorden en de notities. Alt+→ voor een niveau dieper, Shift+Enter voor een regel zonder teken.',
+    'Enter zet een opsommingsteken voor de regel, in de trefwoorden en de notities. Alt+→ voor een niveau dieper, Shift+Enter voor een regel zonder teken. Met “1.” worden de hoofdpunten genummerd en blijven de niveaus daaronder opsommingstekens.',
   'bullets.off': 'Geen',
   'settings.autoScale': 'Tekstgrootte automatisch aanpassen',
   'settings.autoScaleDesc':
@@ -463,7 +463,7 @@ export const en: Record<TranslationKey, string> = {
   'settings.text': 'Text',
   'settings.bullets': 'Automatic bullets',
   'settings.bulletsDesc':
-    'Enter puts a bullet in front of the line, in the cues and the notes. Alt+→ for a sub-level, Shift+Enter for a line without one.',
+    'Enter puts a bullet in front of the line, in the cues and the notes. Alt+→ for a sub-level, Shift+Enter for a line without one. With “1.”, the main points are numbered and anything under them stays a bullet.',
   'bullets.off': 'None',
   'settings.autoScale': 'Scale text size automatically',
   'settings.autoScaleDesc':

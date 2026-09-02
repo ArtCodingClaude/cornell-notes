@@ -88,6 +88,11 @@ body {
    wide screen, where the three-part layout sits side by side. */
 .section-area {
   min-height: 9rem;
+  /* Hold the room for the scrollbar whether one is showing or not. Without
+     this, the bar appearing narrows the text, the lines re-wrap, the automatic
+     size changes, the bar goes away again — and the letters shake between two
+     sizes. Reserving the gutter costs 10px and settles it for good. */
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 1024px) {

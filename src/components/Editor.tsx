@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { CSSProperties, KeyboardEvent, RefObject } from 'react'
+import type {
+  ChangeEvent,
+  CSSProperties,
+  KeyboardEvent,
+  RefObject,
+} from 'react'
 import { useApp } from '../context/AppContext'
 import { useFitFontSize } from '../hooks/useAutoFontSize'
 import { useUndoHistory } from '../hooks/useUndoHistory'
 import type { Snapshot } from '../hooks/useUndoHistory'
-import { onEnter, onIndent } from '../lib/bullets'
+import { onEnter, onIndent, renumber } from '../lib/bullets'
 import { download, noteToMarkdown, safeFilename } from '../lib/noteFile'
 import type { Note, Section } from '../types'
 import {
@@ -535,13 +540,31 @@ function SectionBox({
 
       if (edit) {
         event.preventDefault()
-        pendingCaret.current = edit.caret
-        onChange(edit.value)
+        // A new item shifts every number below it along by one.
+        const fixed = renumber(edit.value, edit.caret, settings.bulletStyle)
+        pendingCaret.current = fixed.caret
+        onChange(fixed.value)
         return
       }
     }
 
     onKeyDown(event)
+  }
+
+  // Enter is not the only thing that breaks a numbered list: deleting a line,
+  // pasting a block or typing over a marker all leave the count wrong. So the
+  // numbering is checked on the way through every change, not only on Enter.
+  function handleChange(event: ChangeEvent<HTMLTextAreaElement>) {
+    const el = event.currentTarget
+    if (bulletsOn && settings.bulletStyle === 'number') {
+      const fixed = renumber(el.value, el.selectionStart, settings.bulletStyle)
+      if (fixed.value !== el.value) {
+        pendingCaret.current = fixed.caret
+        onChange(fixed.value)
+        return
+      }
+    }
+    onChange(el.value)
   }
 
   return (
@@ -583,7 +606,7 @@ function SectionBox({
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={handleChange}
         onFocus={onFocus}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}

@@ -16,8 +16,13 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 
 export type Language = 'en' | 'fr' | 'nl'
 
-/** Marker put in front of a line when automatic bullets are on. */
-export type BulletStyle = 'off' | 'dot' | 'dash'
+/**
+ * Marker put in front of a line when automatic bullets are on.
+ *
+ * `number` counts its outermost level (1., 2., 3.) and falls back to bullets
+ * for anything nested under a numbered point.
+ */
+export type BulletStyle = 'off' | 'dot' | 'dash' | 'number'
 
 export type AccentKey =
   | 'indigo'

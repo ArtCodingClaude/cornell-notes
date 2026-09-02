@@ -131,6 +131,7 @@ export function SettingsView({ onBack, onImport }: Props) {
               { value: 'off', label: t('bullets.off') },
               { value: 'dot', label: '•' },
               { value: 'dash', label: '–' },
+              { value: 'number', label: '1.' },
             ]}
           />
         </Row>

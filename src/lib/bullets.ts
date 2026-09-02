@@ -8,10 +8,18 @@ import type { BulletStyle } from '../types'
  * turns them back into a plain "- " list on export.
  */
 
-/** Markers per nesting level. Level 0 is the outermost. */
+/**
+ * Markers per nesting level. Level 0 is the outermost.
+ *
+ * The numbered style only counts its outermost level; what hangs under a
+ * numbered point is detail, and reads better as plain bullets than as a
+ * second row of numbers. The "1." here is a placeholder — `renumber` gives
+ * every item its real number once the edit has been made.
+ */
 const markers: Record<Exclude<BulletStyle, 'off'>, string[]> = {
   dot: ['•', '◦', '▪'],
   dash: ['-', '-', '-'],
+  number: ['1.', '•', '◦'],
 }
 
 /** One nesting level of indentation. Two spaces is what Markdown expects. */
@@ -21,9 +29,16 @@ export const MAX_LEVEL = 2
 
 // Every marker we recognise when reading a line back, whatever the style it
 // was written in — a note may have been imported, or the setting changed.
-const bulletLine = /^([ \t]*)([•◦▪\-*]) (.*)$/
+// Numbers stop at three digits so that a line opening on a year ("1815. La
+// bataille…") is left alone rather than swallowed into a list.
+const bulletLine = /^([ \t]*)(\d{1,3}[.)]|[•◦▪\-*]) (.*)$/
 
-type ParsedLine = { indent: string; level: number; text: string }
+/** True of "7." or "12)" — a marker that carries a number we may rewrite. */
+function isNumbered(marker: string): boolean {
+  return /^\d/.test(marker)
+}
+
+type ParsedLine = { indent: string; level: number; marker: string; text: string }
 
 export function parseBullet(line: string): ParsedLine | null {
   const match = bulletLine.exec(line)
@@ -32,6 +47,7 @@ export function parseBullet(line: string): ParsedLine | null {
   return {
     indent,
     level: Math.floor(indent.length / INDENT.length),
+    marker: match[2],
     text: match[3],
   }
 }
@@ -53,6 +69,61 @@ function lineAround(value: string, caret: number): { start: number; end: number 
   const start = value.lastIndexOf('\n', caret - 1) + 1
   const next = value.indexOf('\n', caret)
   return { start, end: next === -1 ? value.length : next }
+}
+
+/**
+ * Puts a numbered list back in order: 1, 2, 3.
+ *
+ * The numbers are real text, so inserting or deleting a line anywhere leaves
+ * everything below it wrong. Rather than patch the lines around each edit,
+ * the whole field is renumbered after every change — it is a handful of lines
+ * and it cannot drift out of step. A line that is not a list item ends the
+ * list, so the next one starts again at 1.
+ *
+ * Sub-levels are bullets in this style and are left exactly as they are.
+ */
+export function renumber(
+  value: string,
+  caret: number,
+  style: BulletStyle,
+): Edit {
+  if (style !== 'number') return { value, caret }
+
+  let counter = 0
+  let start = 0 // where the current line begins in the original value
+  let shift = 0 // characters gained or lost above the caret so far
+  // Set only when the caret was sitting inside a marker being rewritten.
+  let landing: number | null = null
+
+  const lines = value.split('\n').map((line) => {
+    const parsed = parseBullet(line)
+    let rewritten = line
+
+    if (!parsed) {
+      counter = 0
+    } else if (parsed.level === 0) {
+      counter += 1
+      rewritten = `${counter}. ${parsed.text}`
+    }
+
+    if (parsed && rewritten !== line) {
+      // The marker runs from the start of the line to the start of the text.
+      const markerEnd = start + line.length - parsed.text.length
+      if (caret >= markerEnd) {
+        shift += rewritten.length - line.length
+      } else if (caret >= start && landing === null) {
+        // Inside the marker itself: put the caret just after the new one.
+        landing = start + shift + (rewritten.length - parsed.text.length)
+      }
+    }
+
+    start += line.length + 1
+    return rewritten
+  })
+
+  const result = lines.join('\n')
+  const next = landing ?? caret + shift
+  return { value: result, caret: Math.min(Math.max(next, 0), result.length) }
 }
 
 /**
@@ -143,7 +214,9 @@ export function bulletsToMarkdown(text: string): string {
     .map((line) => {
       const parsed = parseBullet(line)
       if (!parsed) return line
-      return INDENT.repeat(parsed.level) + '- ' + parsed.text
+      // Markdown has ordered lists too, so a numbered item stays numbered.
+      const marker = isNumbered(parsed.marker) ? parsed.marker : '-'
+      return INDENT.repeat(parsed.level) + marker + ' ' + parsed.text
     })
     .join('\n')
 }
