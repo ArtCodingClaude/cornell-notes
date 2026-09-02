@@ -13,6 +13,7 @@ export const defaultSettings: Settings = {
   maxFontSize: 22,
   cuesRatio: 30,
   bulletStyle: 'dot',
+  autocorrect: true,
   shortcuts: {
     gotoCues: 'mod+1',
     gotoNotes: 'mod+2',

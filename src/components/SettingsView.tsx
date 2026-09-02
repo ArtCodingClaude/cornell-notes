@@ -139,6 +139,23 @@ export function SettingsView({ onBack, onImport }: Props) {
         <label className="flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"
+            checked={settings.autocorrect}
+            onChange={(event) =>
+              updateSettings({ autocorrect: event.target.checked })
+            }
+            className="mt-1 h-4 w-4 cursor-pointer accent-[var(--accent)]"
+          />
+          <span>
+            <span className={label}>{t('settings.autocorrect')}</span>
+            <span className={cx(muted, 'block')}>
+              {t('settings.autocorrectDesc')}
+            </span>
+          </span>
+        </label>
+
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
             checked={settings.autoScale}
             onChange={(event) =>
               updateSettings({ autoScale: event.target.checked })

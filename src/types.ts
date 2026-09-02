@@ -56,6 +56,8 @@ export type Settings = {
   cuesRatio: number // width of the cue column, in percent
   /** Automatic bullets in the cue and note columns. */
   bulletStyle: BulletStyle
+  /** Fix common misspellings as a word is finished. */
+  autocorrect: boolean
   shortcuts: Record<ActionKey, string>
   /** Timestamp of the last export, used by the backup reminder. 0 = never. */
   lastExportAt: number

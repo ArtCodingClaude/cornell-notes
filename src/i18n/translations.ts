@@ -64,6 +64,11 @@ export const fr = {
   'settings.bulletsDesc':
     'Entrée met une puce devant la ligne, dans les mots-clés et les notes. Alt+→ pour un sous-niveau, Maj+Entrée pour une ligne sans puce. Avec « 1. », les points principaux sont numérotés et les sous-niveaux restent des puces.',
   'bullets.off': 'Aucune',
+  'settings.autocorrect': 'Correction automatique',
+  'settings.autocorrectDesc':
+    'Corrige les fautes de frappe courantes et les accents oubliés de la langue choisie, dès que vous finissez un mot. Le mot proposé s’affiche en haut de la section avant d’être appliqué : appuyez sur Alt pour garder le vôtre.',
+  'autocorrect.keepHint': 'Appuyez sur Alt pour garder votre mot tel quel.',
+  'autocorrect.undoHint': 'Corrigé automatiquement. Ctrl+Z pour revenir en arrière.',
   'settings.autoScale': 'Adapter la taille du texte automatiquement',
   'settings.autoScaleDesc':
     'Le texte rétrécit dès qu’il manque de place dans sa section, et regrandit quand vous effacez.',
@@ -108,6 +113,9 @@ export const fr = {
   'guide.featBullets': 'Puces automatiques',
   'guide.featBulletsDesc':
     'Dans les mots-clés et les notes, Entrée met une puce devant la ligne que vous venez de finir et en démarre une sur la suivante. Entrée sur une puce vide sort de la liste ; Alt+→ et Alt+← changent de niveau. Le style se choisit dans les réglages.',
+  'guide.featAutocorrect': 'Correction automatique',
+  'guide.featAutocorrectDesc':
+    'Les fautes de frappe courantes et les accents oubliés se corrigent quand vous finissez le mot — le mot proposé apparaît d’abord en haut de la section. Alt garde votre mot, et ce mot-là n’est plus proposé jusqu’à la fin de la visite : pratique pour les termes techniques. Les abréviations de cours (bcp, pcq, tjrs) sont développées au passage.',
   'guide.featReview': 'Mode révision',
   'guide.featReviewDesc':
     'Le bouton Réviser masque les notes et le résumé : vous ne voyez plus que vos questions. Vous répondez de tête, puis vous révélez. C’est là que la méthode Cornell sert vraiment.',
@@ -265,6 +273,12 @@ export const nl: Record<TranslationKey, string> = {
   'settings.bulletsDesc':
     'Enter zet een opsommingsteken voor de regel, in de trefwoorden en de notities. Alt+→ voor een niveau dieper, Shift+Enter voor een regel zonder teken. Met “1.” worden de hoofdpunten genummerd en blijven de niveaus daaronder opsommingstekens.',
   'bullets.off': 'Geen',
+  'settings.autocorrect': 'Automatische correctie',
+  'settings.autocorrectDesc':
+    'Verbetert veelgemaakte typefouten in de gekozen taal zodra je een woord afmaakt. Het voorstel staat bovenaan het vak voordat het wordt toegepast: druk op Alt om je eigen spelling te houden.',
+  'autocorrect.keepHint': 'Druk op Alt om je eigen woord te houden.',
+  'autocorrect.undoHint':
+    'Automatisch verbeterd. Ctrl+Z om het terug te zetten.',
   'settings.autoScale': 'Tekstgrootte automatisch aanpassen',
   'settings.autoScaleDesc':
     'De tekst wordt kleiner zodra er te weinig ruimte is in de sectie, en weer groter als je wist.',
@@ -309,6 +323,9 @@ export const nl: Record<TranslationKey, string> = {
   'guide.featBullets': 'Automatische opsommingstekens',
   'guide.featBulletsDesc':
     'In de trefwoorden en de notities zet Enter een opsommingsteken voor de regel die je net af hebt, en begint er een op de volgende. Enter op een leeg teken verlaat de lijst; Alt+→ en Alt+← wisselen van niveau. De stijl kies je bij Instellingen.',
+  'guide.featAutocorrect': 'Automatische correctie',
+  'guide.featAutocorrectDesc':
+    'Veelgemaakte typefouten worden verbeterd zodra je het woord afmaakt — het voorstel verschijnt eerst bovenaan het vak. Met Alt houd je je eigen spelling, en dat woord wordt de rest van je bezoek niet meer voorgesteld: handig voor vaktermen.',
   'guide.featReview': 'Overhoormodus',
   'guide.featReviewDesc':
     'De knop Overhoren verbergt de notities en de samenvatting: je ziet alleen nog je vragen. Je antwoordt uit je hoofd en onthult daarna. Dáár is de Cornell-methode voor bedoeld.',
@@ -465,6 +482,11 @@ export const en: Record<TranslationKey, string> = {
   'settings.bulletsDesc':
     'Enter puts a bullet in front of the line, in the cues and the notes. Alt+→ for a sub-level, Shift+Enter for a line without one. With “1.”, the main points are numbered and anything under them stays a bullet.',
   'bullets.off': 'None',
+  'settings.autocorrect': 'Autocorrect',
+  'settings.autocorrectDesc':
+    'Fixes common misspellings in the chosen language as soon as you finish a word. The suggestion appears at the top of the section before it is applied: press Alt to keep your own spelling.',
+  'autocorrect.keepHint': 'Press Alt to keep your own spelling.',
+  'autocorrect.undoHint': 'Corrected automatically. Ctrl+Z to put it back.',
   'settings.autoScale': 'Scale text size automatically',
   'settings.autoScaleDesc':
     'The text shrinks as soon as it runs out of room in its section, and grows back when you delete.',
@@ -508,6 +530,9 @@ export const en: Record<TranslationKey, string> = {
   'guide.featBullets': 'Automatic bullets',
   'guide.featBulletsDesc':
     'In the cues and the notes, Enter puts a bullet in front of the line you have just finished and starts one on the next. Enter on an empty bullet leaves the list; Alt+→ and Alt+← change level. The style is chosen in Settings.',
+  'guide.featAutocorrect': 'Autocorrect',
+  'guide.featAutocorrectDesc':
+    'Common typos and missing accents are fixed as you finish the word — the suggestion shows at the top of the section first. Alt keeps your own spelling, and that word is left alone for the rest of the visit, which is what you want for technical terms.',
   'guide.featReview': 'Review mode',
   'guide.featReviewDesc':
     'The Review button hides the notes and the summary: all you see are your questions. You answer from memory, then reveal. This is what the Cornell method is really for.',

@@ -77,8 +77,12 @@ function lineAround(value: string, caret: number): { start: number; end: number 
  * The numbers are real text, so inserting or deleting a line anywhere leaves
  * everything below it wrong. Rather than patch the lines around each edit,
  * the whole field is renumbered after every change — it is a handful of lines
- * and it cannot drift out of step. A line that is not a list item ends the
- * list, so the next one starts again at 1.
+ * and it cannot drift out of step.
+ *
+ * The count runs over the whole section and nothing resets it: a blank line,
+ * a title or a sub-level in the middle is a pause in the list, not the end of
+ * it, so the next numbered line carries on from the last number rather than
+ * dropping back to 1.
  *
  * Sub-levels are bullets in this style and are left exactly as they are.
  */
@@ -100,7 +104,7 @@ export function renumber(
     let rewritten = line
 
     if (!parsed) {
-      counter = 0
+      // A line without a marker is skipped over, keeping the count.
     } else if (parsed.level === 0) {
       counter += 1
       rewritten = `${counter}. ${parsed.text}`

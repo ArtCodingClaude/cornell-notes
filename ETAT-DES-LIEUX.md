@@ -2,7 +2,7 @@
 
 Fichier de passation. À lire en premier dans une nouvelle session, avant de toucher au code.
 
-**Dernière mise à jour :** 1er septembre 2026 (ajout de l’anglais)
+**Dernière mise à jour :** 2 septembre 2026 (correction automatique)
 
 ---
 
@@ -338,6 +338,53 @@ l'annonce dans l'overlay `?` et le bandeau l'affiche.
 
 **Restent proposés, non faits :** note suivante/précédente depuis l'éditeur, recherche
 différée, fondu à la révélation.
+
+---
+
+## 5e. Correction automatique (fait, testé)
+
+Demandée en cours de route, hors des cinq de la section 2.
+
+- **`src/lib/autocorrect.ts` (nouveau)** — une **liste fixe** de fautes courantes par
+  langue (294 entrées en français, 79 en anglais, 28 en néerlandais) : accents oubliés
+  (`eleve` → `élève`), doubles lettres, faux amis (`example` → `exemple`), et quelques
+  abréviations de cours développées (`bcp`, `pcq`, `tjrs`, `qqch`).
+  Ce n'est **pas** un correcteur orthographique : un mot absent de la liste n'est jamais
+  touché. La liste exclut délibérément tout ce qui est **ambigu** — `a`/`à`, `ou`/`où`,
+  `sur`/`sûr`, `cote`/`côté` sont tous de vrais mots et seule la phrase tranche. Ne pas
+  ajouter ce genre d'entrée : ça abîmerait des notes correctes.
+  La langue utilisée est `settings.language`, celle de l'interface.
+- **Un mot n'est composé que de lettres** (`\p{L}\p{M}`, pas d'apostrophe), pour que
+  `l'eleve` propose bien `élève` au lieu de chercher `l'eleve`. Les majuscules du mot
+  tapé sont reportées sur le remplacement (`Eleve` → `Élève`, `SIECLE` → `SIÈCLE`).
+- **La correction s'applique en finissant le mot** — espace, Entrée ou ponctuation
+  (`commitKeys`). **Pas** sur Tab, qui sert à changer de section ici.
+  Elle est fondue **dans la même édition** que le caractère qui l'a déclenchée : une
+  frappe, une seule annulation. Quand les puces sont actives, le texte corrigé est passé
+  à `onEnter()` puis à `renumber()`, dans cet ordre.
+- **Le mot proposé s'affiche en permanence** dans le bandeau de la section, à côté du
+  titre — jamais au-dessus du curseur : positionner une bulle sur le caret d'un
+  `textarea` demande un div miroir, et la taille de police variable de ce projet rendrait
+  le calcul faux. Le bandeau a une **hauteur fixe** (`min-h-[2.15rem]`) pour que
+  l'apparition de la pastille ne décale pas le texte d'un ou deux pixels.
+  Le compteur de caractères s'efface pour lui laisser la place là où les deux se
+  battraient : toujours dans la colonne étroite, et partout sur téléphone.
+- **`Alt` (un appui seul, pas une combinaison) garde le mot tel quel**, et ce mot n'est
+  plus proposé jusqu'à la fin de la visite (`kept`, un `Set` tenu dans `Editor`, non
+  sauvegardé). Volontairement un appui seul : sous Windows, `Alt+Espace` est intercepté
+  par le système pour ouvrir le menu de la fenêtre, donc la combinaison n'était pas
+  fiable. Le `keydown` de `Alt` fait `preventDefault()`, ce qui empêche aussi le focus de
+  partir dans la barre de menus.
+- **Réglage `settings.autocorrect`**, activé par défaut, dans Réglages → Texte.
+- Vérifié dans Edge (frappe à 0 ms de délai, 234 caractères, rien de perdu), en clair et
+  en sombre, en 1280px et en 390px, et en mode révision (aucune proposition, le champ
+  est en lecture seule).
+
+**Numérotation : le compteur ne repart plus à zéro.** Dans `renumber()`, une ligne sans
+marqueur ne remettait pas seulement le style en cause, elle relançait le comptage à 1.
+Elle est maintenant simplement sautée : le compte court sur toute la section, donc une
+ligne intercalée, un titre ou un sous-niveau est une **pause** dans la liste, pas sa fin.
+`1. / 2. / une remarque / 3.` au lieu de `1. / 2. / une remarque / 1.`
 
 ---
 

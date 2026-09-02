@@ -7,6 +7,13 @@ import type {
 } from 'react'
 import { useApp } from '../context/AppContext'
 import { useFitFontSize } from '../hooks/useAutoFontSize'
+import {
+  applyCorrection,
+  commitKeys,
+  correctionAround,
+  correctionBefore,
+} from '../lib/autocorrect'
+import type { Correction } from '../lib/autocorrect'
 import { useUndoHistory } from '../hooks/useUndoHistory'
 import type { Snapshot } from '../hooks/useUndoHistory'
 import { onEnter, onIndent, renumber } from '../lib/bullets'
@@ -57,6 +64,15 @@ export function Editor({
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [reviewing, setReviewing] = useState(false)
   const [revealed, setRevealed] = useState({ notes: false, summary: false })
+
+  // Words the autocorrection has been told to leave alone, by tapping Alt.
+  // Held here rather than per section, because a technical word you refused
+  // in the notes is the same word you will type in the summary. Not saved:
+  // it lasts as long as this visit, which is as long as the word matters.
+  const [kept, setKept] = useState<ReadonlySet<string>>(() => new Set())
+  const keepWord = useCallback((word: string) => {
+    setKept((current) => new Set(current).add(word))
+  }, [])
 
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -414,6 +430,8 @@ export function Editor({
           style={{ flexBasis: cuesWidth }}
           onChange={(value) => updateNote(note.id, { cues: value })}
           onFocus={() => setActive('cues')}
+          kept={kept}
+          onKeepWord={keepWord}
           onKeyDown={(event) => onSectionKeyDown(event, 'cues')}
         />
         <SectionBox
@@ -431,6 +449,8 @@ export function Editor({
           style={{ flexGrow: 1, flexBasis: 0 }}
           onChange={(value) => updateNote(note.id, { notes: value })}
           onFocus={() => setActive('notes')}
+          kept={kept}
+          onKeepWord={keepWord}
           onKeyDown={(event) => onSectionKeyDown(event, 'notes')}
         />
       </div>
@@ -449,6 +469,8 @@ export function Editor({
         onReveal={() => setRevealed((current) => ({ ...current, summary: true }))}
         onChange={(value) => updateNote(note.id, { summary: value })}
         onFocus={() => setActive('summary')}
+        kept={kept}
+        onKeepWord={keepWord}
         onKeyDown={(event) => onSectionKeyDown(event, 'summary')}
       />
     </div>
@@ -475,6 +497,8 @@ function SectionBox({
   onReveal,
   className,
   style,
+  kept,
+  onKeepWord,
   onChange,
   onFocus,
   onKeyDown,
@@ -492,6 +516,9 @@ function SectionBox({
   onReveal?: () => void
   className?: string
   style?: CSSProperties
+  /** Words the autocorrection must leave alone. Lower case. */
+  kept: ReadonlySet<string>
+  onKeepWord: (word: string) => void
   onChange: (value: string) => void
   onFocus: () => void
   onKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void
@@ -499,6 +526,41 @@ function SectionBox({
   const { settings, t } = useApp()
   const fontSize = useFitFontSize(textareaRef, value, settings)
   const tone = palette[section]
+
+  // The word under the caret, when there is a better spelling on offer. It
+  // is shown in the header the whole time it is on offer, so a correction is
+  // never a surprise: you see it coming, and Alt turns it down.
+  const [hint, setHint] = useState<Correction | null>(null)
+  // What was just replaced, held on screen for a moment afterwards so a
+  // correction that happened while you were looking at the keyboard is not
+  // silent.
+  const [done, setDone] = useState<Correction | null>(null)
+  const doneTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(doneTimer.current), [])
+
+  const autocorrectOn = settings.autocorrect && !readOnly && !masked
+
+  function offered(candidate: Correction | null): Correction | null {
+    if (!candidate) return null
+    return kept.has(candidate.word.toLowerCase()) ? null : candidate
+  }
+
+  function refreshHint(el: HTMLTextAreaElement) {
+    if (!autocorrectOn) {
+      setHint(null)
+      return
+    }
+    setHint(
+      offered(correctionAround(el.value, el.selectionStart, settings.language)),
+    )
+  }
+
+  function flashDone(correction: Correction) {
+    setHint(null)
+    setDone(correction)
+    window.clearTimeout(doneTimer.current)
+    doneTimer.current = window.setTimeout(() => setDone(null), 1900)
+  }
 
   // A bullet edit rewrites the whole field, so the caret has to be put back
   // once React has rendered the new value.
@@ -512,11 +574,63 @@ function SectionBox({
 
   const bulletsOn = bullets && settings.bulletStyle !== 'off' && !readOnly
 
-  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (bulletsOn) {
-      const el = event.currentTarget
-      const { value: text, selectionStart, selectionEnd } = el
+  // What the header shows instead of the character count. A live suggestion
+  // comes first: the confirmation of the last one is only still there because
+  // its couple of seconds have not run out.
+  const suggestion = masked || readOnly ? null : (hint ?? done)
+  /** The header is confirming a correction rather than offering one. */
+  const confirming = suggestion !== null && suggestion === done
 
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    const el = event.currentTarget
+
+    // A tap on Alt keeps the word exactly as typed — and keeps it for the
+    // rest of the visit, since a word worth refusing once is usually a
+    // technical one you are about to type again.
+    if (event.key === 'Alt' && autocorrectOn) {
+      // Read the word back rather than trusting the hint in state, which the
+      // confirmation of the previous correction may still be sitting on.
+      const refused =
+        hint ??
+        offered(correctionAround(el.value, el.selectionStart, settings.language))
+      if (refused) {
+        event.preventDefault()
+        onKeepWord(refused.word.toLowerCase())
+        setHint(null)
+        setDone(null)
+        return
+      }
+    }
+
+    // Finishing a word applies its correction. Text and caret are threaded
+    // through the rest of this handler so the replacement and the character
+    // that triggered it land as a single edit — which is also a single undo.
+    let text = el.value
+    let caret = el.selectionStart
+    let selectionEnd = el.selectionEnd
+    let applied: Correction | null = null
+
+    if (
+      autocorrectOn &&
+      commitKeys.has(event.key) &&
+      caret === selectionEnd &&
+      !event.altKey &&
+      !event.ctrlKey &&
+      !event.metaKey
+    ) {
+      const candidate = offered(
+        correctionBefore(text, caret, settings.language),
+      )
+      if (candidate) {
+        const edit = applyCorrection(text, candidate)
+        text = edit.value
+        caret = edit.caret
+        selectionEnd = edit.caret
+        applied = candidate
+      }
+    }
+
+    if (bulletsOn) {
       // Shift+Enter stays a plain newline, so there is always a way out.
       const plainEnter =
         event.key === 'Enter' &&
@@ -526,12 +640,12 @@ function SectionBox({
         !event.metaKey
 
       const edit = plainEnter
-        ? onEnter(text, selectionStart, selectionEnd, settings.bulletStyle)
+        ? onEnter(text, caret, selectionEnd, settings.bulletStyle)
         : event.altKey &&
             (event.key === 'ArrowRight' || event.key === 'ArrowLeft')
           ? onIndent(
               text,
-              selectionStart,
+              caret,
               selectionEnd,
               settings.bulletStyle,
               event.key === 'ArrowRight' ? 1 : -1,
@@ -543,9 +657,23 @@ function SectionBox({
         // A new item shifts every number below it along by one.
         const fixed = renumber(edit.value, edit.caret, settings.bulletStyle)
         pendingCaret.current = fixed.caret
+        if (applied) flashDone(applied)
         onChange(fixed.value)
         return
       }
+    }
+
+    if (applied) {
+      // We have taken the keypress over, so the character that finished the
+      // word has to be typed in by hand.
+      event.preventDefault()
+      const typed = event.key === 'Enter' ? '\n' : event.key
+      const next = text.slice(0, caret) + typed + text.slice(selectionEnd)
+      const fixed = renumber(next, caret + typed.length, settings.bulletStyle)
+      pendingCaret.current = fixed.caret
+      flashDone(applied)
+      onChange(fixed.value)
+      return
     }
 
     onKeyDown(event)
@@ -556,6 +684,7 @@ function SectionBox({
   // numbering is checked on the way through every change, not only on Enter.
   function handleChange(event: ChangeEvent<HTMLTextAreaElement>) {
     const el = event.currentTarget
+    refreshHint(el)
     if (bulletsOn && settings.bulletStyle === 'number') {
       const fixed = renumber(el.value, el.selectionStart, settings.bulletStyle)
       if (fixed.value !== el.value) {
@@ -581,18 +710,61 @@ function SectionBox({
           : 'var(--shadow)',
       }}
     >
+      {/* A fixed height, so a suggestion appearing cannot nudge the note
+          down a couple of pixels while you are writing in it. */}
       <div
-        className="flex items-center justify-between gap-2 rounded-t-[0.9rem] px-4 py-2"
+        className="flex min-h-[2.15rem] items-center justify-between gap-2 rounded-t-[0.9rem] px-4 py-1"
         style={{ background: tone.soft }}
       >
         <h2
-          className="text-xs font-semibold uppercase tracking-[0.14em]"
+          className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em]"
           style={{ color: tone.color }}
         >
           {title}
         </h2>
+        {/* Next to the title rather than off in the far corner: it belongs
+            to the word you are in the middle of typing, and that is where
+            you are looking. */}
+        {suggestion && (
+          <span
+            className="fade-up mr-auto flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs shadow-[var(--shadow)]"
+            style={{ borderColor: tone.color, background: 'var(--surface)' }}
+            title={
+              confirming ? t('autocorrect.undoHint') : t('autocorrect.keepHint')
+            }
+            aria-live="polite"
+          >
+            {confirming && (
+              <span className="shrink-0" style={{ color: tone.color }}>
+                <CheckIcon className="h-3.5 w-3.5" />
+              </span>
+            )}
+            <span className="truncate text-[var(--text-muted)] line-through">
+              {suggestion.word}
+            </span>
+            <span aria-hidden className="shrink-0 text-[var(--text-muted)]">
+              →
+            </span>
+            {/* The word on offer never shrinks — it is the whole point of
+                the thing. What you typed is what gives way. */}
+            <span className="shrink-0 font-semibold" style={{ color: tone.color }}>
+              {suggestion.to}
+            </span>
+            {!confirming && (
+              <kbd className="ml-0.5 hidden shrink-0 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 font-mono text-[10px] text-[var(--text-muted)] sm:inline">
+                Alt
+              </kbd>
+            )}
+          </span>
+        )}
         <span
-          className="text-[11px] tabular-nums"
+          className={cx(
+            'shrink-0 text-[11px] tabular-nums',
+            // The count gives way to a suggestion wherever the two would be
+            // fighting over the width: always in the narrow cue column, and
+            // on a phone everywhere.
+            suggestion && (section === 'cues' ? 'hidden' : 'hidden sm:inline'),
+          )}
           style={{ color: tone.color, opacity: 0.75 }}
         >
           {/* The character count would give away how much is behind the
@@ -607,7 +779,14 @@ function SectionBox({
         ref={textareaRef}
         value={value}
         onChange={handleChange}
-        onFocus={onFocus}
+        onFocus={(event) => {
+          onFocus()
+          refreshHint(event.currentTarget)
+        }}
+        // Moving the caret changes which word is under it, and React fires
+        // this for a plain caret move as well as for a real selection.
+        onSelect={(event) => refreshHint(event.currentTarget)}
+        onBlur={() => setHint(null)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         spellCheck={!readOnly}
