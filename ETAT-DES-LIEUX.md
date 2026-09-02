@@ -2,7 +2,7 @@
 
 Fichier de passation. À lire en premier dans une nouvelle session, avant de toucher au code.
 
-**Dernière mise à jour :** 2 septembre 2026 (correction automatique)
+**Dernière mise à jour :** 2 septembre 2026 (correcteur orthographique, Ctrl+Y)
 
 ---
 
@@ -341,52 +341,169 @@ différée, fondu à la révélation.
 
 ---
 
+
 ## 5e. Correction automatique (fait, testé)
 
-Demandée en cours de route, hors des cinq de la section 2.
+Demandée en cours de route, hors des cinq de la section 2. Deux temps : d'abord une
+table de fautes courantes, puis — après un retour de l'utilisateur (« ça ne remplace
+que les accents ») — un vrai correcteur orthographique.
 
-- **`src/lib/autocorrect.ts` (nouveau)** — une **liste fixe** de fautes courantes par
-  langue (294 entrées en français, 79 en anglais, 28 en néerlandais) : accents oubliés
-  (`eleve` → `élève`), doubles lettres, faux amis (`example` → `exemple`), et quelques
-  abréviations de cours développées (`bcp`, `pcq`, `tjrs`, `qqch`).
-  Ce n'est **pas** un correcteur orthographique : un mot absent de la liste n'est jamais
-  touché. La liste exclut délibérément tout ce qui est **ambigu** — `a`/`à`, `ou`/`où`,
-  `sur`/`sûr`, `cote`/`côté` sont tous de vrais mots et seule la phrase tranche. Ne pas
-  ajouter ce genre d'entrée : ça abîmerait des notes correctes.
-  La langue utilisée est `settings.language`, celle de l'interface.
-- **Un mot n'est composé que de lettres** (`\p{L}\p{M}`, pas d'apostrophe), pour que
-  `l'eleve` propose bien `élève` au lieu de chercher `l'eleve`. Les majuscules du mot
-  tapé sont reportées sur le remplacement (`Eleve` → `Élève`, `SIECLE` → `SIÈCLE`).
-- **La correction s'applique en finissant le mot** — espace, Entrée ou ponctuation
-  (`commitKeys`). **Pas** sur Tab, qui sert à changer de section ici.
-  Elle est fondue **dans la même édition** que le caractère qui l'a déclenchée : une
-  frappe, une seule annulation. Quand les puces sont actives, le texte corrigé est passé
-  à `onEnter()` puis à `renumber()`, dans cet ordre.
+### Comment ça marche — `src/lib/autocorrect.ts`
+
+Un mot passe par **quatre étapes**, la première qui répond gagne :
+
+1. **Table fixe** par langue (`frFixes`, `enFixes`, `nlFixes`) — ce qu'aucun dictionnaire
+   ne peut deviner : faux amis (`example` → `exemple`), mots collés (`parceque`),
+   abréviations de cours (`bcp` → `beaucoup`, `pcq`, `tjrs`, `qqch`).
+2. **Est-ce un mot ?** Recherche dans le dictionnaire **complet** de la langue. Si oui,
+   on ne touche à rien.
+3. **Accents.** On essaie les accentuations plausibles de ce qui a été tapé et on garde
+   celle que le dictionnaire connaît : `eleve` → `élève`, `gamete` → `gamète`. Si
+   **plusieurs** accentuations sont des mots, on ne dit rien (`cote` peut être `côte`,
+   `coté` ou `côté` — seule la phrase sait).
+4. **Mot courant le plus proche**, à une ou deux éditions, les inversions de lettres
+   comptant pour une seule : `wwerhe` → `where`, `probelme` → `problème`.
+
+Les distances sont mesurées **sans les accents** des deux côtés : en français un accent
+oublié est une faute de clavier, pas d'orthographe, et le compter comme une édition
+mange le budget qui doit rester pour la vraie faute. `mathematiqe` est à trois éditions
+de `mathématique` mais à une seule de `mathematique`.
+
+### ⚠️ Pourquoi le dictionnaire complet — ne pas revenir en arrière
+
+Première version : la validité venait de la liste des 33 000 mots les plus fréquents.
+**Mesuré sur 109 mots de cours correctement orthographiés, 10 étaient massacrés en
+silence** — `glucide` → `lucide`, `dérivée` → `dérive`, `tectonique` → `technique`,
+`urbanisation` → `organisation`. Le vocabulaire scolaire est précisément ce qui manque à
+une liste de fréquence tirée de sous-titres de films.
+
+Avec le dictionnaire complet : **0 sur 109.** C'est l'étape 2 qui tient tout l'édifice.
+Si un jour la taille des fichiers dérange, ne pas la rogner de ce côté-là.
+
+### Les fichiers de mots — `src/lib/words/`, générés
+
+`npm run wordlists` (script `scripts/build-wordlists.mjs`) télécharge et réécrit six
+fichiers. **Ne pas les éditer à la main.** Deux par langue :
+
+- **`<langue>.ts` — quoi proposer.** Liste de fréquence (OpenSubtitles, via
+  hermitdave/FrequencyWords) **croisée** avec un vrai dictionnaire, la plus fréquente
+  d'abord. L'ordre est ce qui tranche entre `were` et `where` ; le croisement écarte les
+  fautes, noms propres et mots étrangers dont les sous-titres sont remplis.
+- **`<langue>-all.ts` — ce qui compte comme un mot.** Stocké **front-codé** : mots
+  triés, chacun ne gardant que les lettres qu'il ne partage pas avec le précédent
+  (`0abaissa 7i 7t` = abaissa, abaissai, abaissait). Décodé en **une seule grande
+  chaîne** triée, cherchée par dichotomie — un `Set` de tous les mots français coûte
+  39 Mo de mémoire, la chaîne en coûte 7. C'est important sur un téléphone.
+
+**Les deux fichiers d'une langue sont générés ensemble et ne se séparent pas :** le
+script ne garde dans le gros fichier que les mots **réellement en danger**, c'est-à-dire
+à deux éditions d'un mot suggérable (astuce des variantes par suppression). C'est ce qui
+fait passer le néerlandais de 813 à 289 kB. Donc si on change la liste courte, il faut
+relancer le script pour l'autre, sinon la protection devient fausse **en silence**.
+
+Poids réels (`npm run build`), téléchargés **seulement quand une note est ouverte**, et
+seulement pour la langue en cours :
+
+| | liste courte | dictionnaire | total gzip |
+|---|---|---|---|
+| français | 132 kB | 154 kB | **286 kB** |
+| anglais | 132 kB | 237 kB | 369 kB |
+| néerlandais | 170 kB | 289 kB | 459 kB |
+
+L'app elle-même reste à **91 kB gzip**. `vite.config.ts` a `chunkSizeWarningLimit: 800`
+pour que le build arrête de prévenir à propos de quelque chose de voulu.
+
+⚠️ **Pour la PWA (section 4.4) :** ces fichiers doivent être mis en cache **à l'usage**
+(runtime caching), pas préchargés. Sinon l'installation télécharge le néerlandais et
+l'anglais dont personne n'a besoin.
+
+### Les garde-fous — chacun répare un dégât constaté
+
+- **Noms propres.** Un mot avec une majuscule est **proposé, jamais appliqué** par
+  l'étape 4 : sans ça, `Cornell` devenait `Corner` — le nom de l'app. En milieu de
+  phrase il faut en plus une seule lettre d'écart pour être mentionné. Les étapes 1 et 3
+  s'appliquent quand même (elles sont exactes) : `Eleve` → `Élève` en début de ligne
+  marche donc.
+- **Début de phrase.** `opensSentence()` regarde en arrière : retour à la ligne, point,
+  puce ou numéro. La majuscule y est de la grammaire, pas un nom.
+- **Acronymes.** Un mot tout en majuscules n'est jamais une faute : `ADN` ne doit pas
+  devenir `AN`.
+- **Apostrophes et traits d'union** (`joiner`). Un mot collé à l'un des deux n'est pas un
+  mot entier et n'est pas corrigé : sans ça `week-end` devenait `week-en` et `aujourd’hui`
+  se faisait corriger sur `aujourd`.
+- **`alsoFine`** — les mots que les dictionnaires n'ont pas rattrapés, surtout les
+  emprunts, qui sont les plus dangereux : `email` est à une lettre de `mail` et `login`
+  de `loin`. **On peut y ajouter librement** : un mot listé là est simplement laissé
+  tranquille, ce qui est le sens sûr.
+- **Barres de fréquence.** `COMMON` (12 000) à une édition, `VERY_COMMON` (4 000) à deux :
+  on ne corrige que **vers** un mot que les gens emploient. Une correction à deux
+  éditions vers un mot obscur est une coïncidence, pas une correction. Ces deux constantes
+  doivent rester **sous** la taille de la liste courte, sinon le calcul des mots en danger
+  du générateur ne couvre plus tout.
+- **Les mots de la table sont ajoutés à la liste des candidats** au rang `TABLE_RANK`
+  (6 000), et remontent le rang d'un mot déjà présent plus bas. Sans ça `mathematiqe`
+  n'avait rien à quoi être corrigé : les sous-titres de films disent peu `mathématique`.
+
+### Vitesse
+
+**0,9 ms par mot**, mesuré, sur chaque frappe. Ce qui rend ça possible : les candidats
+sont groupés par longueur (±2), puis filtrés par un **masque de lettres** (un bit par
+lettre de l'alphabet, accents repliés) avant tout calcul de distance ; et la distance
+elle-même abandonne dès que la ligne courante dépasse le budget. Les trois lignes du
+calcul sont des `Int32Array` réutilisées, pas des tableaux alloués par appel.
+
+### L'interface — `src/components/Editor.tsx`
+
 - **Le mot proposé s'affiche en permanence** dans le bandeau de la section, à côté du
   titre — jamais au-dessus du curseur : positionner une bulle sur le caret d'un
   `textarea` demande un div miroir, et la taille de police variable de ce projet rendrait
   le calcul faux. Le bandeau a une **hauteur fixe** (`min-h-[2.15rem]`) pour que
-  l'apparition de la pastille ne décale pas le texte d'un ou deux pixels.
-  Le compteur de caractères s'efface pour lui laisser la place là où les deux se
-  battraient : toujours dans la colonne étroite, et partout sur téléphone.
-- **`Alt` (un appui seul, pas une combinaison) garde le mot tel quel**, et ce mot n'est
-  plus proposé jusqu'à la fin de la visite (`kept`, un `Set` tenu dans `Editor`, non
-  sauvegardé). Volontairement un appui seul : sous Windows, `Alt+Espace` est intercepté
-  par le système pour ouvrir le menu de la fenêtre, donc la combinaison n'était pas
-  fiable. Le `keydown` de `Alt` fait `preventDefault()`, ce qui empêche aussi le focus de
-  partir dans la barre de menus.
-- **Réglage `settings.autocorrect`**, activé par défaut, dans Réglages → Texte.
-- Vérifié dans Edge (frappe à 0 ms de délai, 234 caractères, rien de perdu), en clair et
-  en sombre, en 1280px et en 390px, et en mode révision (aucune proposition, le champ
-  est en lecture seule).
+  l'apparition de la pastille ne décale rien. Le compteur de caractères s'efface pour lui
+  laisser la place là où les deux se battraient.
+- **Espace / ponctuation** applique les corrections sûres. **`Ctrl+Espace` ou un clic sur
+  la pastille** prend aussi celles qui ne sont que proposées. **`Tab`** corrige et passe à
+  la section suivante. **`Alt`** (un appui seul) garde le mot, et ce mot n'est plus
+  proposé jusqu'à la fin de la visite (`kept`, un `Set` dans `Editor`, non sauvegardé).
+- Un appui seul sur `Alt` et non `Alt+Espace` : sous Windows, `Alt+Espace` est intercepté
+  par le système pour ouvrir le menu de la fenêtre.
+- ⚠️ La pastille est un `<button>` avec **`onMouseDown` annulé**. Sans ça, l'appui sort le
+  focus de la note, ce qui efface la suggestion, ce qui démonte le bouton avant le
+  relâchement — et le clic n'arrive jamais.
+- La correction est fondue **dans la même édition** que le caractère qui l'a déclenchée :
+  une frappe, une seule annulation. Avec les puces actives, le texte corrigé est passé à
+  `onEnter()` puis `renumber()`, dans cet ordre.
+- Le vocabulaire est chargé par un `useEffect` dans `Editor` ; tant qu'il n'est pas là,
+  seule la table fixe joue, et l'app n'attend jamais après lui.
 
-**Numérotation : le compteur ne repart plus à zéro.** Dans `renumber()`, une ligne sans
-marqueur ne remettait pas seulement le style en cause, elle relançait le comptage à 1.
-Elle est maintenant simplement sautée : le compte court sur toute la section, donc une
+### Réglage
+
+`settings.autocorrect`, activé par défaut, dans Réglages → Texte.
+
+### Vérifié
+
+40 tests sur la logique (fautes réelles corrigées, mots corrects intacts, garde-fous,
+vitesse), et piloté dans Edge : chargement des dictionnaires au bon moment, correction à
+l'espace, accents, nom propre proposé mais pas forcé, `Ctrl+Espace`, clic, `Alt`, `Tab`,
+`Ctrl+Y`, clair et sombre, 1280px et 390px, mode révision (aucune proposition).
+
+---
+
+## 5f. Numérotation : le compteur ne repart plus à zéro
+
+Dans `renumber()` (`src/lib/bullets.ts`), une ligne sans marqueur relançait le comptage à
+1. Elle est maintenant simplement sautée : le compte court sur toute la section, donc une
 ligne intercalée, un titre ou un sous-niveau est une **pause** dans la liste, pas sa fin.
 `1. / 2. / une remarque / 3.` au lieu de `1. / 2. / une remarque / 1.`
 
 ---
+
+## 5g. Rétablir est passé sur `Ctrl+Y`
+
+À la demande de l'utilisateur (`mod+shift+z` avant). Un raccourci enregistré dans le
+navigateur **écrase la valeur par défaut**, donc changer `defaultSettings` ne suffisait
+pas : `loadSettings()` fait une petite migration, et remplace `mod+shift+z` par la
+nouvelle valeur — mais **seulement** cette valeur-là, pour ne pas écraser un raccourci
+choisi à la main.
 
 ## 6. Piège déjà rencontré — ne pas le réintroduire
 

@@ -7,4 +7,10 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss()],
+  build: {
+    // The dictionaries in src/lib/words are meant to be big, and each one is
+    // its own chunk that only downloads when that language is in use. Raised
+    // so the build stops warning about something that is on purpose.
+    chunkSizeWarningLimit: 800,
+  },
 })

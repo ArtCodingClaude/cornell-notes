@@ -25,7 +25,7 @@ export const defaultSettings: Settings = {
     review: 'mod+r',
     print: 'mod+p',
     undo: 'mod+z',
-    redo: 'mod+shift+z',
+    redo: 'mod+y',
   },
   lastExportAt: 0,
   backupSnoozedUntil: 0,
@@ -56,11 +56,17 @@ export function loadSettings(): Settings {
     localStorage.getItem(SETTINGS_KEY),
     {},
   )
-  return {
-    ...defaultSettings,
-    ...stored,
-    shortcuts: { ...defaultSettings.shortcuts, ...(stored.shortcuts ?? {}) },
+  const shortcuts = {
+    ...defaultSettings.shortcuts,
+    ...(stored.shortcuts ?? {}),
   }
+  // Redo used to be Ctrl+Shift+Z. Stored settings win over the defaults, so
+  // without this the new default would never reach anyone who has already
+  // opened the app. Only the old default is moved: a shortcut the user chose
+  // themselves is left alone.
+  if (shortcuts.redo === 'mod+shift+z') shortcuts.redo = defaultSettings.shortcuts.redo
+
+  return { ...defaultSettings, ...stored, shortcuts }
 }
 
 export function saveSettings(settings: Settings): void {

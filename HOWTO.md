@@ -46,6 +46,19 @@ npm run preview
 
 ---
 
+## Refabriquer les dictionnaires du correcteur
+
+```
+npm run wordlists
+```
+
+Ça télécharge les listes de mots (français, anglais, néerlandais) et réécrit les fichiers
+dans `src/lib/words/`. **À ne lancer que si on veut changer les dictionnaires** — le
+résultat est enregistré dans le projet, donc l'app n'a jamais besoin d'Internet pour
+corriger. Ça prend une minute et il faut une connexion.
+
+---
+
 ## Installer les dépendances
 
 À faire une seule fois, ou si tu récupères le projet sur une autre machine :

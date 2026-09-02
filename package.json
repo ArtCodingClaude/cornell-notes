@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "wordlists": "node --max-old-space-size=8192 scripts/build-wordlists.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

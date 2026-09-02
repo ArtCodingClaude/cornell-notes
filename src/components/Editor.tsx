@@ -12,11 +12,13 @@ import {
   commitKeys,
   correctionAround,
   correctionBefore,
+  loadVocabulary,
 } from '../lib/autocorrect'
 import type { Correction } from '../lib/autocorrect'
 import { useUndoHistory } from '../hooks/useUndoHistory'
 import type { Snapshot } from '../hooks/useUndoHistory'
 import { onEnter, onIndent, renumber } from '../lib/bullets'
+import { isApplePlatform } from '../lib/shortcuts'
 import { download, noteToMarkdown, safeFilename } from '../lib/noteFile'
 import type { Note, Section } from '../types'
 import {
@@ -51,6 +53,9 @@ type Props = {
 
 const order: Section[] = ['cues', 'notes', 'summary']
 
+/** What to call the accept key in the little pill. */
+const modKey = isApplePlatform() ? '⌘' : 'Ctrl'
+
 export function Editor({
   note,
   focusRequest,
@@ -73,6 +78,22 @@ export function Editor({
   const keepWord = useCallback((word: string) => {
     setKept((current) => new Set(current).add(word))
   }, [])
+
+  // The word list for the spell check is a separate download, fetched the
+  // first time a note is open and kept from then on. Counting the arrivals
+  // rather than storing the list keeps it out of React: the state is only
+  // here to redraw once it lands, so suggestions start appearing.
+  const [, setVocabularyReady] = useState(0)
+  useEffect(() => {
+    if (!settings.autocorrect) return
+    let current = true
+    void loadVocabulary(settings.language).then(() => {
+      if (current) setVocabularyReady((count) => count + 1)
+    })
+    return () => {
+      current = false
+    }
+  }, [settings.autocorrect, settings.language])
 
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -562,6 +583,15 @@ function SectionBox({
     doneTimer.current = window.setTimeout(() => setDone(null), 1900)
   }
 
+  /** Take the word on offer now, without waiting for the end of the word. */
+  function accept(el: HTMLTextAreaElement, correction: Correction) {
+    const edit = applyCorrection(el.value, correction)
+    pendingCaret.current = edit.caret
+    flashDone(correction)
+    onChange(edit.value)
+    el.focus()
+  }
+
   // A bullet edit rewrites the whole field, so the caret has to be put back
   // once React has rendered the new value.
   const pendingCaret = useRef<number | null>(null)
@@ -602,6 +632,24 @@ function SectionBox({
       }
     }
 
+    // Ctrl+Space takes the word on offer, whether or not the app was
+    // confident enough to put it in by itself.
+    if (
+      autocorrectOn &&
+      event.code === 'Space' &&
+      (event.ctrlKey || event.metaKey) &&
+      !event.shiftKey
+    ) {
+      const taken =
+        hint ??
+        offered(correctionAround(el.value, el.selectionStart, settings.language))
+      if (taken) {
+        event.preventDefault()
+        accept(el, taken)
+        return
+      }
+    }
+
     // Finishing a word applies its correction. Text and caret are threaded
     // through the rest of this handler so the replacement and the character
     // that triggered it land as a single edit — which is also a single undo.
@@ -610,9 +658,13 @@ function SectionBox({
     let selectionEnd = el.selectionEnd
     let applied: Correction | null = null
 
+    // Tab leaves for the next section and takes the correction with it,
+    // confident or not: you have finished with this word either way.
+    const leaving = event.key === 'Tab' && !event.shiftKey
+
     if (
       autocorrectOn &&
-      commitKeys.has(event.key) &&
+      (commitKeys.has(event.key) || leaving) &&
       caret === selectionEnd &&
       !event.altKey &&
       !event.ctrlKey &&
@@ -621,13 +673,24 @@ function SectionBox({
       const candidate = offered(
         correctionBefore(text, caret, settings.language),
       )
-      if (candidate) {
+      // On the way out, anything on offer is taken. Mid-sentence, only what
+      // the spell check is sure of — the rest waits for Ctrl+Space.
+      if (candidate && (candidate.sure || leaving)) {
         const edit = applyCorrection(text, candidate)
         text = edit.value
         caret = edit.caret
         selectionEnd = edit.caret
         applied = candidate
       }
+    }
+
+    if (applied && leaving) {
+      // Write the correction, then let Tab do its usual job.
+      pendingCaret.current = caret
+      flashDone(applied)
+      onChange(text)
+      onKeyDown(event)
+      return
     }
 
     if (bulletsOn) {
@@ -685,6 +748,10 @@ function SectionBox({
   function handleChange(event: ChangeEvent<HTMLTextAreaElement>) {
     const el = event.currentTarget
     refreshHint(el)
+    // The confirmation of the last correction has had its moment: leaving it
+    // up while you type the next word makes it look like it belongs to that
+    // one instead.
+    if (done) setDone(null)
     if (bulletsOn && settings.bulletStyle === 'number') {
       const fixed = renumber(el.value, el.selectionStart, settings.bulletStyle)
       if (fixed.value !== el.value) {
@@ -726,11 +793,27 @@ function SectionBox({
             to the word you are in the middle of typing, and that is where
             you are looking. */}
         {suggestion && (
-          <span
-            className="fade-up mr-auto flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs shadow-[var(--shadow)]"
+          <button
+            type="button"
+            // Clicking it is the way out for anyone not reaching for
+            // Ctrl+Space, and it is how you find out the pill does anything.
+            // Without this the press takes the focus out of the note, which
+            // clears the suggestion, which unmounts this button before the
+            // release — and the click never happens at all.
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              const el = textareaRef.current
+              if (el && !confirming) accept(el, suggestion)
+            }}
+            disabled={confirming}
+            className="fade-up mr-auto flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs shadow-[var(--shadow)] transition hover:brightness-95 disabled:cursor-default"
             style={{ borderColor: tone.color, background: 'var(--surface)' }}
             title={
-              confirming ? t('autocorrect.undoHint') : t('autocorrect.keepHint')
+              confirming
+                ? t('autocorrect.undoHint')
+                : suggestion.sure
+                  ? t('autocorrect.keepHint')
+                  : t('autocorrect.acceptHint')
             }
             aria-live="polite"
           >
@@ -752,10 +835,12 @@ function SectionBox({
             </span>
             {!confirming && (
               <kbd className="ml-0.5 hidden shrink-0 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 font-mono text-[10px] text-[var(--text-muted)] sm:inline">
-                Alt
+                {/* A sure one is already on its way in, so the key worth
+                    showing is the one that stops it. */}
+                {suggestion.sure ? 'Alt' : `${modKey}+␣`}
               </kbd>
             )}
-          </span>
+          </button>
         )}
         <span
           className={cx(

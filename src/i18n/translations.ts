@@ -66,8 +66,10 @@ export const fr = {
   'bullets.off': 'Aucune',
   'settings.autocorrect': 'Correction automatique',
   'settings.autocorrectDesc':
-    'Corrige les fautes de frappe courantes et les accents oubliés de la langue choisie, dès que vous finissez un mot. Le mot proposé s’affiche en haut de la section avant d’être appliqué : appuyez sur Alt pour garder le vôtre.',
+    'Corrige les fautes de frappe dans la langue choisie. Un mot mal orthographié est comparé au dictionnaire : les corrections évidentes se font seules dès que vous finissez le mot, les autres sont proposées en haut de la section — Ctrl+Espace, ou un clic sur la proposition, pour l’accepter. Alt garde votre mot.',
   'autocorrect.keepHint': 'Appuyez sur Alt pour garder votre mot tel quel.',
+  'autocorrect.acceptHint':
+    'Ctrl+Espace, ou un clic, pour remplacer par ce mot. Alt pour garder le vôtre.',
   'autocorrect.undoHint': 'Corrigé automatiquement. Ctrl+Z pour revenir en arrière.',
   'settings.autoScale': 'Adapter la taille du texte automatiquement',
   'settings.autoScaleDesc':
@@ -115,7 +117,7 @@ export const fr = {
     'Dans les mots-clés et les notes, Entrée met une puce devant la ligne que vous venez de finir et en démarre une sur la suivante. Entrée sur une puce vide sort de la liste ; Alt+→ et Alt+← changent de niveau. Le style se choisit dans les réglages.',
   'guide.featAutocorrect': 'Correction automatique',
   'guide.featAutocorrectDesc':
-    'Les fautes de frappe courantes et les accents oubliés se corrigent quand vous finissez le mot — le mot proposé apparaît d’abord en haut de la section. Alt garde votre mot, et ce mot-là n’est plus proposé jusqu’à la fin de la visite : pratique pour les termes techniques. Les abréviations de cours (bcp, pcq, tjrs) sont développées au passage.',
+    'Chaque mot est comparé au dictionnaire de la langue choisie. Une faute évidente est corrigée dès que vous finissez le mot ; un mot plus abîmé est proposé en haut de la section, et Ctrl+Espace (ou un clic) l’accepte. Tab corrige et passe à la section suivante. Alt garde votre mot, qui n’est plus proposé jusqu’à la fin de la visite : pratique pour les termes techniques. Les accents oubliés et les abréviations de cours (bcp, pcq, tjrs) sont traités au passage.',
   'guide.featReview': 'Mode révision',
   'guide.featReviewDesc':
     'Le bouton Réviser masque les notes et le résumé : vous ne voyez plus que vos questions. Vous répondez de tête, puis vous révélez. C’est là que la méthode Cornell sert vraiment.',
@@ -275,8 +277,10 @@ export const nl: Record<TranslationKey, string> = {
   'bullets.off': 'Geen',
   'settings.autocorrect': 'Automatische correctie',
   'settings.autocorrectDesc':
-    'Verbetert veelgemaakte typefouten in de gekozen taal zodra je een woord afmaakt. Het voorstel staat bovenaan het vak voordat het wordt toegepast: druk op Alt om je eigen spelling te houden.',
+    'Verbetert typefouten in de gekozen taal. Een verkeerd gespeld woord wordt met het woordenboek vergeleken: duidelijke fouten worden zelf verbeterd zodra je het woord afmaakt, de andere worden bovenaan het vak voorgesteld — Ctrl+Spatie, of een klik op het voorstel, neemt het over. Met Alt houd je je eigen woord.',
   'autocorrect.keepHint': 'Druk op Alt om je eigen woord te houden.',
+  'autocorrect.acceptHint':
+    'Ctrl+Spatie, of een klik, om dit woord te nemen. Alt houdt het jouwe.',
   'autocorrect.undoHint':
     'Automatisch verbeterd. Ctrl+Z om het terug te zetten.',
   'settings.autoScale': 'Tekstgrootte automatisch aanpassen',
@@ -325,7 +329,7 @@ export const nl: Record<TranslationKey, string> = {
     'In de trefwoorden en de notities zet Enter een opsommingsteken voor de regel die je net af hebt, en begint er een op de volgende. Enter op een leeg teken verlaat de lijst; Alt+→ en Alt+← wisselen van niveau. De stijl kies je bij Instellingen.',
   'guide.featAutocorrect': 'Automatische correctie',
   'guide.featAutocorrectDesc':
-    'Veelgemaakte typefouten worden verbeterd zodra je het woord afmaakt — het voorstel verschijnt eerst bovenaan het vak. Met Alt houd je je eigen spelling, en dat woord wordt de rest van je bezoek niet meer voorgesteld: handig voor vaktermen.',
+    'Elk woord wordt vergeleken met het woordenboek van de gekozen taal. Een duidelijke fout wordt verbeterd zodra je het woord afmaakt; een erger vervormd woord wordt bovenaan het vak voorgesteld, en Ctrl+Spatie (of een klik) neemt het over. Tab verbetert en gaat naar het volgende vak. Met Alt houd je je eigen woord, dat de rest van je bezoek niet meer wordt voorgesteld: handig voor vaktermen.',
   'guide.featReview': 'Overhoormodus',
   'guide.featReviewDesc':
     'De knop Overhoren verbergt de notities en de samenvatting: je ziet alleen nog je vragen. Je antwoordt uit je hoofd en onthult daarna. Dáár is de Cornell-methode voor bedoeld.',
@@ -484,8 +488,10 @@ export const en: Record<TranslationKey, string> = {
   'bullets.off': 'None',
   'settings.autocorrect': 'Autocorrect',
   'settings.autocorrectDesc':
-    'Fixes common misspellings in the chosen language as soon as you finish a word. The suggestion appears at the top of the section before it is applied: press Alt to keep your own spelling.',
+    'Fixes typing mistakes in the chosen language. A misspelled word is checked against the dictionary: obvious fixes are made on their own as you finish the word, the rest are offered at the top of the section — Ctrl+Space, or a click on the suggestion, takes it. Alt keeps your own word.',
   'autocorrect.keepHint': 'Press Alt to keep your own spelling.',
+  'autocorrect.acceptHint':
+    'Ctrl+Space, or a click, to take this word. Alt keeps yours.',
   'autocorrect.undoHint': 'Corrected automatically. Ctrl+Z to put it back.',
   'settings.autoScale': 'Scale text size automatically',
   'settings.autoScaleDesc':
@@ -532,7 +538,7 @@ export const en: Record<TranslationKey, string> = {
     'In the cues and the notes, Enter puts a bullet in front of the line you have just finished and starts one on the next. Enter on an empty bullet leaves the list; Alt+→ and Alt+← change level. The style is chosen in Settings.',
   'guide.featAutocorrect': 'Autocorrect',
   'guide.featAutocorrectDesc':
-    'Common typos and missing accents are fixed as you finish the word — the suggestion shows at the top of the section first. Alt keeps your own spelling, and that word is left alone for the rest of the visit, which is what you want for technical terms.',
+    'Every word is checked against the dictionary for the chosen language. An obvious slip is fixed as you finish the word; a more mangled one is offered at the top of the section, and Ctrl+Space (or a click) takes it. Tab fixes it and moves to the next section. Alt keeps your own word, which is then left alone for the rest of the visit — what you want for technical terms.',
   'guide.featReview': 'Review mode',
   'guide.featReviewDesc':
     'The Review button hides the notes and the summary: all you see are your questions. You answer from memory, then reveal. This is what the Cornell method is really for.',
