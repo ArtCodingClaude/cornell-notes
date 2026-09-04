@@ -513,7 +513,17 @@ const alsoFine: Record<Language, string> = {
     podcast podcasts streaming selfie selfies influencer blog blogger
     startup covid pdf url html css javascript python google internet online
     offline replay hashtag playlist app apps website websites debuggen
-    pixel pixels server router tweet tweets streamer gamer gaming`,
+    pixel pixels server router tweet tweets streamer gamer gaming
+    orgaanstelsel orgaanstelsels chlorofyl chloroplast chloroplasten
+    celmembraan celkernen voedselweb allel allelen fenotype voedingsstof
+    voedingsstoffen spijsverteringsstelsel ademhalingsstelsel uitscheiding
+    broeikasgas broeikasgassen longblaasje longblaasjes longslagader
+    geslachtscel geslachtscellen chromosoomparen ongewervelden plantenrijk
+    dierenrijk schimmelrijk fylogenie klimaatzone klimaatzones
+    bevolkingsdichtheid verstedelijking sedimentatie estuaria troposfeer
+    hoogtelijn hoogtelijnen aardmantel plaattektoniek magmakamer
+    vulkaankrater kratermeer waterkringloop koolstofkringloop
+    stikstofkringloop wereldkaart aardplaat aardplaten zeespiegelstijging`,
 }
 
 /**
