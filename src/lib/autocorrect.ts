@@ -523,7 +523,20 @@ const alsoFine: Record<Language, string> = {
     bevolkingsdichtheid verstedelijking sedimentatie estuaria troposfeer
     hoogtelijn hoogtelijnen aardmantel plaattektoniek magmakamer
     vulkaankrater kratermeer waterkringloop koolstofkringloop
-    stikstofkringloop wereldkaart aardplaat aardplaten zeespiegelstijging`,
+    stikstofkringloop wereldkaart aardplaat aardplaten zeespiegelstijging
+    fotosynthese celademhaling enzym enzymen koolhydraten vetzuren
+    hormoonklier hormoonklieren zenuwstelsel ruggenmerg bloedsomloop
+    hartkamer hartkamers slagader slagaders haarvaten alvleesklier
+    chromosoom chromosomen genotype ecosysteem ecosystemen voedselketen
+    voedselketens biodiversiteit symbiose celdeling stofwisseling
+    immuunsysteem antilichaam antilichamen bacterie bacteriën wervelkolom
+    wervelkolommen continent continenten oceaan oceanen gebergte gebergten
+    aardbeving aardbevingen rivierdelta rivierdeltas stroomgebied
+    stroomgebieden moesson moessons erosie verwering tektonische
+    breuklijn breuklijnen evenaar poolcirkel poolcirkels breedtegraad
+    breedtegraden lengtegraad lengtegraden migratiestroom migratiestromen
+    klimaatverandering natuurramp natuurrampen overstroming overstromingen
+    droogte`,
 }
 
 /**
