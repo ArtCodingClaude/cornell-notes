@@ -19,10 +19,20 @@ import type { Settings } from '../types'
  */
 
 /** Sizes closer together than this are the same size as far as we care. */
-const STEP = 0.5
+const STEP = 1
 
-/** Room the text has to gain, in pixels, before it is allowed to grow back. */
-const GROW_MARGIN = 1
+/**
+ * Empty lines left under the text whenever the size changes.
+ *
+ * Shrinking only just enough to fit meant shrinking again on the very next
+ * line: twenty little jumps on the way down a full box, each one re-wrapping
+ * every line above the caret, which reads as the whole note shaking. Leaving
+ * room for a couple of lines makes it a handful of jumps with calm between.
+ */
+const ROOM_LINES = 2
+
+/** `leading-relaxed` on the textarea: line height as a multiple of the size. */
+const LINE_HEIGHT = 1.625
 
 /** A box that moved by less than this did not really change shape. */
 const BOX_EPSILON = 1
@@ -30,9 +40,9 @@ const BOX_EPSILON = 1
 /**
  * The size to use now, or null while the element has no layout to measure.
  *
- * Shrinks as soon as the size in use overflows, but grows only once there is
- * a clear margin to grow into. That asymmetry is what stops the flicker: a
- * size that fits is kept, so nothing can trade one size for the other.
+ * Shrinks only once the size in use overflows, and grows only once a bigger
+ * size would still leave the spare lines free. Between the two it keeps what
+ * it has, so no size can ever trade places with another.
  */
 function measureFit(
   el: HTMLTextAreaElement,
@@ -46,50 +56,61 @@ function measureFit(
 
   const previous = {
     fontSize: el.style.fontSize,
-    transition: el.style.transition,
     overflowY: el.style.overflowY,
+    paddingBottom: el.style.paddingBottom,
   }
-  // The size is animated for the user; during measurement we need the layout
-  // the browser would settle on, not the frame it is currently animating.
-  el.style.transition = 'none'
+  const padding = parseFloat(getComputedStyle(el).paddingBottom) || 0
   // A scrollbar appearing narrows the text, which moves where the lines wrap,
   // which can make the text fit — and then the scrollbar goes and it
   // overflows again. Holding the gutter open for the whole measurement judges
   // every candidate size against the same width.
   el.style.overflowY = 'scroll'
 
-  const fits = (px: number) => {
+  /** True when `px` fits with `lines` empty lines still to spare below. */
+  const fits = (px: number, lines: number) => {
     el.style.fontSize = `${px}px`
+    // Extra padding is the spare room: the box keeps its height, so the text
+    // has to fit in what is left above it.
+    el.style.paddingBottom = `${padding + lines * px * LINE_HEIGHT}px`
     return el.scrollHeight <= el.clientHeight
   }
 
-  let largest: number
-  if (fits(max)) {
-    largest = max
-  } else {
+  /** The largest size that leaves the spare lines free. */
+  const roomy = () => {
+    if (fits(max, ROOM_LINES)) return max
     let low = min
     let high = max
     while (high - low > STEP) {
       const mid = (low + high) / 2
-      if (fits(mid)) low = mid
+      if (fits(mid, ROOM_LINES)) low = mid
       else high = mid
     }
     // Down to a whole step, so the same box always answers with the same
     // number instead of a new decimal every time.
-    largest = Math.max(min, Math.floor(low / STEP) * STEP)
+    return Math.max(min, Math.floor(low / STEP) * STEP)
+  }
+
+  let next: number
+  if (current < min || current > max) {
+    // The limits were just moved in settings: take a new size at once rather
+    // than hold on to an impossible one.
+    next = roomy()
+  } else if (!fits(current, 0)) {
+    // Overflowing. At the smallest size there is nothing left to try, and the
+    // box scrolls instead; otherwise shrink, with room to type into.
+    next = current <= min ? min : roomy()
+  } else {
+    // It fits. Grow only if the bigger size would fit with room to spare too,
+    // or the next line would shrink it straight back.
+    const bigger = current < max ? roomy() : current
+    next = Math.max(bigger, current)
   }
 
   el.style.fontSize = previous.fontSize
-  el.style.transition = previous.transition
   el.style.overflowY = previous.overflowY
+  el.style.paddingBottom = previous.paddingBottom
 
-  // Outside the allowed range: the limits were just moved in settings, so
-  // take the new size at once rather than hold on to an impossible one.
-  if (current < min || current > max) return largest
-  // Overflowing: shrink now, the text is being cut off.
-  if (current > largest) return largest
-  // It fits. Grow only when the gain is worth a redraw.
-  return largest - current >= GROW_MARGIN ? largest : current
+  return next
 }
 
 export function useFitFontSize(

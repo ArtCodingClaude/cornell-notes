@@ -882,7 +882,9 @@ function SectionBox({
           {
             fontSize: `${fontSize}px`,
             '--section-min-h': tone.min,
-            transition: 'font-size 220ms ease',
+            // No transition on the size: an animated font size re-wraps the
+            // lines at every frame of the animation, and the words hop back
+            // and forth between lines until it ends.
             // Kept in the layout while hidden, so the box does not resize
             // when the answer is revealed.
             visibility: masked ? 'hidden' : 'visible',
