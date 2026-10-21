@@ -48,6 +48,31 @@ export function changedField(
   return null
 }
 
+/**
+ * Where the caret belongs after `before` was turned back into `after`: just
+ * past the stretch that changed. Whatever both texts share at the start and
+ * at the end was not touched, so the edit sits between the two.
+ */
+export function caretAfterChange(before: string, after: string): number {
+  let start = 0
+  while (
+    start < before.length &&
+    start < after.length &&
+    before[start] === after[start]
+  ) {
+    start += 1
+  }
+  let tail = 0
+  while (
+    tail < before.length - start &&
+    tail < after.length - start &&
+    before[before.length - 1 - tail] === after[after.length - 1 - tail]
+  ) {
+    tail += 1
+  }
+  return after.length - tail
+}
+
 export function useUndoHistory(
   note: Note,
   apply: (snapshot: Snapshot, field: keyof Snapshot | null) => void,

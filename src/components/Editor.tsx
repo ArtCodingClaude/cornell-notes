@@ -15,7 +15,7 @@ import {
   loadVocabulary,
 } from '../lib/autocorrect'
 import type { Correction } from '../lib/autocorrect'
-import { useUndoHistory } from '../hooks/useUndoHistory'
+import { caretAfterChange, useUndoHistory } from '../hooks/useUndoHistory'
 import type { Snapshot } from '../hooks/useUndoHistory'
 import { onEnter, onIndent, renumber } from '../lib/bullets'
 import { isApplePlatform } from '../lib/shortcuts'
@@ -143,24 +143,44 @@ export function Editor({
   }
 
   // Undo history, because a controlled textarea has no usable native one.
+  /** Where the caret goes once an undo or redo has been drawn. */
+  const undoCaret = useRef<{ field: Section; caret: number } | null>(null)
   const applySnapshot = useCallback(
     (snapshot: Snapshot, field: keyof Snapshot | null) => {
-      updateNote(note.id, snapshot)
       if (field && field !== 'title') {
-        const target = refs[field].current
         // Put the caret back where the change was, so the next keystroke
-        // carries on from there instead of at the end of another section.
-        window.requestAnimationFrame(() => {
-          target?.focus()
-          const end = snapshot[field].length
-          target?.setSelectionRange(end, end)
-        })
+        // carries on from there — not at the end of the section, which in a
+        // long note is a screen away from what was just undone. Read the
+        // text before the update replaces it: the difference is the change.
+        const before = refs[field].current?.value ?? ''
+        undoCaret.current = {
+          field,
+          caret: caretAfterChange(before, snapshot[field]),
+        }
       }
+      updateNote(note.id, snapshot)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [note.id, updateNote],
   )
   const { undo, redo } = useUndoHistory(note, applySnapshot)
+
+  // Placed once the restored text is in the box. Any earlier and React
+  // writing the new value moves the caret to the end all over again.
+  useLayoutEffect(() => {
+    const pending = undoCaret.current
+    if (!pending) return
+    undoCaret.current = null
+    const target = refs[pending.field].current
+    if (!target) return
+    // Moving the caret of a box that already has the focus does not scroll
+    // to it, and the change may be off screen. Arriving afresh does, so the
+    // caret goes in first and the focus follows it.
+    target.setSelectionRange(pending.caret, pending.caret)
+    if (document.activeElement === target) target.blur()
+    target.focus()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note.cues, note.notes, note.summary])
 
   // Shortcuts live in App, which only sends a command with a nonce. Comparing
   // against the last one handled keeps this from firing on mount.
