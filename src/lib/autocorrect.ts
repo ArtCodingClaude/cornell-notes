@@ -28,6 +28,10 @@ import type { Language } from '../types'
  * 109 correctly spelled school terms (photosynthèse, hypoténuse, tectonique)
  * it changes none. With only the common-word list it wrecked ten of them.
  *
+ * A word that is real in either of the other two languages is left alone as
+ * well, since notes mix them: `het` in French notes is Dutch, not a typo for
+ * `et`.
+ *
  * Also deliberate: names and acronyms are left alone, a word next to an
  * apostrophe or a hyphen is not spell checked on its own (`week-end` must not
  * become `week-en`), and `alsoFine` below holds the borrowed words the
@@ -573,6 +577,29 @@ const vocabularies = new Map<Language, Vocabulary>()
 const pending = new Map<Language, Promise<void>>()
 
 /**
+ * Every language's whole dictionary, once it has arrived.
+ *
+ * All three are kept, not only the one in use, because notes mix them: a
+ * Dutch term in French notes, an English word in a Dutch summary. A word
+ * that is real in any of them is not a typo, and "correcting" it is how
+ * `het` turned into `et` and `une` into `one`.
+ */
+const dictionaries = new Map<Language, (word: string) => boolean>()
+const dictionaryLoads = new Map<Language, Promise<void>>()
+
+/**
+ * The commonest words of each language.
+ *
+ * A whole dictionary lists `tres`, `meme` and `apres` as English or Dutch,
+ * and nobody typing them means that. So the fixed table, whose entries were
+ * picked by hand, only gives way to a word people use every day in the other
+ * language: `these`, `general`, `energie`.
+ */
+const everyday = new Map<Language, Set<string>>()
+
+const languages = Object.keys(wordFiles) as Language[]
+
+/**
  * Letters as bits, one per letter of the alphabet, accents folded away.
  *
  * Two words within a couple of edits of each other cannot use wildly
@@ -707,25 +734,76 @@ function index(
   return { rank, buckets }
 }
 
+/** Fetch and unpack one language's whole dictionary, once. */
+function loadDictionary(language: Language): Promise<void> {
+  const already = dictionaryLoads.get(language)
+  if (already) return already
+
+  const load = Promise.all([wordFiles[language](), allWordFiles[language]()])
+    .then(([common, { all }]) => {
+      const inDictionary = decodeAll(all)
+      const borrowed = new Set(alsoFine[language].split(/\s+/).filter(Boolean))
+      dictionaries.set(
+        language,
+        (word) => borrowed.has(word) || inDictionary(word),
+      )
+      everyday.set(language, new Set(common.words.split(' ', COMMON)))
+    })
+    .catch((error: unknown) => {
+      // Let the next call try again rather than remember the failure.
+      dictionaryLoads.delete(language)
+      throw error
+    })
+
+  dictionaryLoads.set(language, load)
+  return load
+}
+
+/** True when the word is real in one of the languages other than this one. */
+function isForeignWord(word: string, language: Language): boolean {
+  for (const [other, known] of dictionaries) {
+    if (other !== language && known(word)) return true
+  }
+  return false
+}
+
+/** True when the word is in everyday use in one of the other languages. */
+function isEverydayForeignWord(word: string, language: Language): boolean {
+  for (const [other, common] of everyday) {
+    if (other !== language && common.has(word)) return true
+  }
+  return false
+}
+
 /**
- * Fetch and index the word list for one language.
+ * Fetch and index the word list for one language, and the dictionaries of
+ * the other two so that their words are left alone.
  *
  * Safe to call as often as you like: the work happens once. Until it
  * resolves, only the fixed table above is in play — which is why the app
- * never waits on this.
+ * never waits on this. Spell checking only starts once all three have
+ * arrived, so a word from another language is never mistaken for a typo in
+ * the seconds before its dictionary lands.
  */
 export function loadVocabulary(language: Language): Promise<void> {
   if (vocabularies.has(language)) return Promise.resolve()
   const already = pending.get(language)
   if (already) return already
 
-  const load = Promise.all([wordFiles[language](), allWordFiles[language]()])
-    .then(([common, everything]) => {
-      const inDictionary = decodeAll(everything.all)
-      const borrowed = new Set(alsoFine[language].split(/\s+/).filter(Boolean))
+  const load = Promise.all([
+    wordFiles[language](),
+    // Another language failing to load is no reason to stop checking this
+    // one: its words just are not recognised.
+    ...languages.map((each) =>
+      each === language ? loadDictionary(each) : loadDictionary(each).catch(() => {}),
+    ),
+  ])
+    .then(([common]) => {
+      const known = dictionaries.get(language)
+      if (!known) return
       vocabularies.set(language, {
         ...index(common.words, Object.values(fixes[language])),
-        known: (word) => borrowed.has(word) || inDictionary(word),
+        known,
       })
     })
     .catch(() => {
@@ -998,13 +1076,26 @@ function nearest(
   return best
 }
 
-function correctionFor(found: Found | null, language: Language): Correction | null {
+function correctionFor(
+  found: Found | null,
+  language: Language,
+  /** Show table entries for words real in another language, rather than drop them. */
+  offerForeign: boolean,
+): Correction | null {
   if (!found || !found.word) return null
   const lower = found.word.toLowerCase()
 
   // 1. The fixed table wins: it knows things a word list cannot.
   const listed = fixes[language]?.[lower]
   if (listed) {
+    // Unless what was typed is an everyday word in another language:
+    // `general` may be French without its accent, or English. Those are
+    // never put in on their own — only shown, for Ctrl+Space to take.
+    if (isEverydayForeignWord(lower, language)) {
+      return offerForeign
+        ? { ...found, to: matchCase(found.word, listed), sure: false }
+        : null
+    }
     return { ...found, to: matchCase(found.word, listed), sure: true }
   }
 
@@ -1022,6 +1113,8 @@ function correctionFor(found: Found | null, language: Language): Correction | nu
   if (shouted) return null
 
   if (vocabulary.known(lower)) return null
+  // Nor is a word that is real in one of the other languages.
+  if (isForeignWord(lower, language)) return null
 
   // 3. Accents first, and on their own: an accenting the dictionary knows is
   // what was meant, not a guess.
@@ -1097,13 +1190,19 @@ export function wordAround(text: string, caret: number): Found | null {
   }
 }
 
-/** A correction for the word that has just been finished. */
+/**
+ * A correction for the word that has just been finished.
+ *
+ * This is what gets put in when a word ends, so a word real in another
+ * language never comes back from here, not even as an offer: Tab takes
+ * whatever is on offer, and it must not take that.
+ */
 export function correctionBefore(
   text: string,
   caret: number,
   language: Language,
 ): Correction | null {
-  return correctionFor(wordBefore(text, caret), language)
+  return correctionFor(wordBefore(text, caret), language, false)
 }
 
 /** A correction to show above the section while the word is being typed. */
@@ -1112,7 +1211,7 @@ export function correctionAround(
   caret: number,
   language: Language,
 ): Correction | null {
-  return correctionFor(wordAround(text, caret), language)
+  return correctionFor(wordAround(text, caret), language, true)
 }
 
 /** Put the replacement in, and say where the caret lands. */
