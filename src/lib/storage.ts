@@ -15,6 +15,7 @@ export const defaultSettings: Settings = {
   cuesRatio: 30,
   bulletsOn: true,
   bulletLevels: ['dot', 'circle', 'square'],
+  noteListOpen: true,
   autocorrect: true,
   shortcuts: {
     gotoCues: 'mod+1',

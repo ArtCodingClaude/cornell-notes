@@ -70,6 +70,8 @@ export type Settings = {
   bulletsOn: boolean
   /** The markers used by every note that has no style of its own. */
   bulletLevels: BulletLevels
+  /** The list of notes beside the open one, on a wide screen. */
+  noteListOpen: boolean
   /** Fix common misspellings as a word is finished. */
   autocorrect: boolean
   shortcuts: Record<ActionKey, string>

@@ -39,6 +39,8 @@ export const fr = {
   'diagram.summaryDesc': 'Deux ou trois phrases, avec vos propres mots.',
 
   'editor.untitled': 'Note sans titre',
+  'noteList.title': 'Mes notes',
+  'noteList.toggle': 'Afficher ou masquer la liste des notes',
   'editor.titlePlaceholder': 'Titre de la note',
   'editor.cuesPlaceholder':
     'Mots-clés, questions…\n\nÀ remplir après la prise de notes.',
@@ -267,6 +269,8 @@ export const nl: Record<TranslationKey, string> = {
   'diagram.summaryDesc': 'Twee of drie zinnen, in je eigen woorden.',
 
   'editor.untitled': 'Notitie zonder titel',
+  'noteList.title': 'Mijn notities',
+  'noteList.toggle': 'Lijst met notities tonen of verbergen',
   'editor.titlePlaceholder': 'Titel van de notitie',
   'editor.cuesPlaceholder':
     'Trefwoorden, vragen…\n\nVul dit in ná het maken van de notities.',
@@ -495,6 +499,8 @@ export const en: Record<TranslationKey, string> = {
   'diagram.summaryDesc': 'Two or three sentences, in your own words.',
 
   'editor.untitled': 'Untitled note',
+  'noteList.title': 'My notes',
+  'noteList.toggle': 'Show or hide the list of notes',
   'editor.titlePlaceholder': 'Note title',
   'editor.cuesPlaceholder':
     'Keywords, questions…\n\nFill this in after taking your notes.',

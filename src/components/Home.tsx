@@ -7,7 +7,7 @@ import { buttonGhost, buttonPrimary, card, cx, inputBase, muted } from './ui'
 
 // Typed as a full record so adding a language fails the build until the
 // date format is filled in too, instead of silently falling back.
-const dateLocales: Record<Language, string> = {
+export const dateLocales: Record<Language, string> = {
   en: 'en-GB',
   fr: 'fr-BE',
   nl: 'nl-BE',

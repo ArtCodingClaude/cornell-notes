@@ -175,6 +175,7 @@ export default function App() {
             onFullscreen={setFocusMode}
             onBack={goHome}
             onNewNote={startNote}
+            onOpenNote={setOpenId}
           />
         )}
 

@@ -143,7 +143,12 @@ body {
    fullscreen API, so it is painted on its own: the page background behind it
    is gone and it has to carry its own. */
 .note-fullscreen {
-  height: 100%;
+  /* Pinned to the window rather than sized from the page: when the browser
+     refuses real fullscreen (an iPhone, an embedded preview) nothing above
+     has a height to take 100% of, and the sections collapsed to a sliver. */
+  position: fixed;
+  inset: 0;
+  z-index: 30;
   overflow-y: auto;
   background-color: var(--bg);
   background-image:
@@ -157,6 +162,12 @@ body {
 @media (min-width: 1024px) {
   .note-fullscreen {
     overflow: hidden;
+  }
+
+  /* The column holding the note, beside the list of notes: it takes the
+     full height, so the sections below can share it out. */
+  .note-fullscreen .note-column {
+    min-height: 0;
   }
 
   .note-fullscreen .note-row {
