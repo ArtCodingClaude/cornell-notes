@@ -18,7 +18,7 @@ import type { Correction } from '../lib/autocorrect'
 import { caretAfterChange, useUndoHistory } from '../hooks/useUndoHistory'
 import type { Snapshot } from '../hooks/useUndoHistory'
 import { onEnter, onIndent, renumber } from '../lib/bullets'
-import { isApplePlatform } from '../lib/shortcuts'
+import { formatCombo, isApplePlatform } from '../lib/shortcuts'
 import { download, noteToMarkdown, safeFilename } from '../lib/noteFile'
 import type { Note, Section } from '../types'
 import {
@@ -28,6 +28,7 @@ import {
   ExpandIcon,
   EyeIcon,
   EyeOffIcon,
+  PlusIcon,
   ShrinkIcon,
   TrashIcon,
 } from './Icons'
@@ -49,6 +50,8 @@ type Props = {
   fullscreen: boolean
   onFullscreen: (next: boolean) => void
   onBack: () => void
+  /** Start another note straight from this one, without going home first. */
+  onNewNote: () => void
 }
 
 const order: Section[] = ['cues', 'notes', 'summary']
@@ -63,6 +66,7 @@ export function Editor({
   fullscreen,
   onFullscreen,
   onBack,
+  onNewNote,
 }: Props) {
   const { updateNote, deleteNote, settings, saveState, t } = useApp()
   const [active, setActive] = useState<Section>('notes')
@@ -325,6 +329,16 @@ export function Editor({
             </>
           )}
         </span>
+
+        <button
+          type="button"
+          onClick={onNewNote}
+          className={cx(buttonGhost, 'px-3 py-2')}
+          title={`${t('shortcuts.newNote')} — ${formatCombo(settings.shortcuts.newNote)}`}
+        >
+          <PlusIcon className="h-5 w-5" />
+          <span className="hidden sm:inline">{t('shortcuts.newNote')}</span>
+        </button>
 
         <button
           type="button"

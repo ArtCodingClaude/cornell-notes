@@ -170,6 +170,7 @@ export default function App() {
             fullscreen={focusMode}
             onFullscreen={setFocusMode}
             onBack={goHome}
+            onNewNote={startNote}
           />
         )}
 
