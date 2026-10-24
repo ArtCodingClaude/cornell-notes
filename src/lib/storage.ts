@@ -1,4 +1,4 @@
-import { markerOptions } from './bullets'
+import { defaultLevels, fullLevels, LEVEL_COUNT, markerOptions } from './bullets'
 import type { BulletLevels, Note, Settings } from '../types'
 
 const NOTES_KEY = 'cornell.notes.v1'
@@ -14,7 +14,7 @@ export const defaultSettings: Settings = {
   maxFontSize: 22,
   cuesRatio: 30,
   bulletsOn: true,
-  bulletLevels: ['dot', 'circle', 'square'],
+  bulletLevels: defaultLevels,
   noteListOpen: true,
   autocorrect: true,
   shortcuts: {
@@ -52,15 +52,20 @@ export function loadNotes(): Note[] {
   return notes.filter(isNote).map((note) => ({
     ...note,
     subject: note.subject ?? '',
-    bullets: isBulletLevels(note.bullets) ? note.bullets : null,
+    bullets: isBulletLevels(note.bullets) ? fullLevels(note.bullets) : null,
   }))
 }
 
-/** True of a valid per-level bullet style: three known markers. */
+/**
+ * True of a saved per-level bullet style: known markers, one per level. Up
+ * to `LEVEL_COUNT` of them — fewer when it was saved before lists could go
+ * that deep, which `fullLevels` then fills up.
+ */
 export function isBulletLevels(value: unknown): value is BulletLevels {
   return (
     Array.isArray(value) &&
-    value.length === 3 &&
+    value.length > 0 &&
+    value.length <= LEVEL_COUNT &&
     value.every((marker) => markerOptions.includes(marker))
   )
 }
@@ -70,9 +75,9 @@ export function isBulletLevels(value: unknown): value is BulletLevels {
  * Moved over once, so nobody's notes change look after the update.
  */
 const fromOldStyle: Record<string, BulletLevels> = {
-  dot: ['dot', 'circle', 'square'],
-  dash: ['dash', 'dash', 'dash'],
-  number: ['number', 'dot', 'circle'],
+  dot: fullLevels(['dot', 'circle', 'square']),
+  dash: new Array(LEVEL_COUNT).fill('dash'),
+  number: fullLevels(['number', 'dot', 'circle']),
 }
 
 export function saveNotes(notes: Note[]): void {
@@ -103,8 +108,10 @@ export function loadSettings(): Settings {
     bullets.bulletsOn = bulletStyle !== 'off'
     bullets.bulletLevels = fromOldStyle[bulletStyle] ?? defaultSettings.bulletLevels
   }
-  if (rest.bulletLevels !== undefined && !isBulletLevels(rest.bulletLevels)) {
-    bullets.bulletLevels = defaultSettings.bulletLevels
+  if (rest.bulletLevels !== undefined) {
+    bullets.bulletLevels = isBulletLevels(rest.bulletLevels)
+      ? fullLevels(rest.bulletLevels)
+      : defaultSettings.bulletLevels
   }
 
   return { ...defaultSettings, ...rest, ...bullets, shortcuts }

@@ -1,21 +1,21 @@
 import { useApp } from '../context/AppContext'
-import { markerOptions, markerText } from '../lib/bullets'
+import { defaultLevels, markerOptions, markerText } from '../lib/bullets'
 import type { TranslationKey } from '../i18n/translations'
 import type { BulletLevels, Marker } from '../types'
 import { cx, label, muted } from './ui'
 
-const levelNames: TranslationKey[] = [
+/** The first three levels have names; deeper ones are just numbered. */
+const namedLevels: TranslationKey[] = [
   'bullets.level1',
   'bullets.level2',
   'bullets.level3',
 ]
 
-/** The style a note starts with when it is given one of its own. */
-export const startingLevels: BulletLevels = ['dot', 'circle', 'square']
-
-/** "1. a) •" — a style in one glance, for buttons and summaries. */
+/** "1. a) • …" — a style in one glance, for buttons and summaries. */
 export function describeLevels(levels: BulletLevels): string {
-  return levels.map((marker) => markerText(marker)).join('  ')
+  // The first three say enough; all six would crowd the button.
+  const shown = levels.slice(0, 3).map((marker) => markerText(marker))
+  return shown.join('  ') + (levels.length > 3 ? '  …' : '')
 }
 
 /**
@@ -32,19 +32,25 @@ export function BulletPicker({
   const { t } = useApp()
 
   function choose(level: number, marker: Marker) {
-    const next = [...value] as BulletLevels
+    const next = [...value]
     next[level] = marker
     onChange(next)
   }
 
+  const names = value.map((_, level) =>
+    level < namedLevels.length
+      ? t(namedLevels[level])
+      : `${t('bullets.levelN')} ${level + 1}`,
+  )
+
   return (
     <div className="flex flex-col gap-3">
-      {levelNames.map((name, level) => (
-        <div key={name} className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <span className={cx(label, 'w-36 shrink-0')}>{t(name)}</span>
+      {names.map((name, level) => (
+        <div key={level} className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span className={cx(label, 'w-36 shrink-0')}>{name}</span>
           <div
             role="radiogroup"
-            aria-label={t(name)}
+            aria-label={name}
             className="inline-flex flex-wrap rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-1"
           >
             {markerOptions.map((marker) => (
@@ -79,14 +85,18 @@ export function BulletPicker({
   )
 }
 
-/** Two main points with a sub-point and a sub-sub-point, as they would look. */
+/**
+ * A list going all the way down and coming back up, as it would look: every
+ * level once, then a second item at the first two so the counting shows.
+ */
 function Preview({ levels }: { levels: BulletLevels }) {
   // Which level each line sits at, and which item of its level it is.
   const lines: [level: number, n: number, width: string][] = [
-    [0, 1, '10rem'],
-    [1, 1, '8rem'],
-    [2, 1, '6rem'],
-    [1, 2, '7rem'],
+    ...levels.map(
+      (_, level) =>
+        [level, 1, `${10 - level}rem`] as [number, number, string],
+    ),
+    [1, 2, '8rem'],
     [0, 2, '9rem'],
   ]
   return (
@@ -149,7 +159,7 @@ export function NoteBulletsPanel({
             aria-checked={own === choice.own}
             onClick={() => {
               if (choice.own === own) return
-              onChange(choice.own ? (general ?? startingLevels) : null)
+              onChange(choice.own ? (general ?? defaultLevels) : null)
             }}
             className={cx(
               'cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition',

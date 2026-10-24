@@ -63,7 +63,28 @@ export function markerText(marker: Marker, n = 1): string {
 /** One nesting level of indentation. Two spaces is what Markdown expects. */
 export const INDENT = '  '
 
-export const MAX_LEVEL = 2
+/** How deep a list can go: the main points and five levels under them. */
+export const LEVEL_COUNT = 6
+
+export const MAX_LEVEL = LEVEL_COUNT - 1
+
+/** What each level starts with, until someone chooses otherwise. */
+export const defaultLevels: BulletLevels = [
+  'dot',
+  'circle',
+  'square',
+  'dash',
+  'arrow',
+  'dot',
+]
+
+/**
+ * A style with a marker for every level. Styles saved when there were only
+ * three levels keep their three and take the defaults below them.
+ */
+export function fullLevels(levels: readonly Marker[]): BulletLevels {
+  return defaultLevels.map((fallback, level) => levels[level] ?? fallback)
+}
 
 // Every marker we recognise when reading a line back, whatever it was
 // written with — a note may have been imported, or its style changed.
@@ -181,7 +202,7 @@ export function renumber(
 ): Edit {
   if (!levels || !counts(levels)) return { value, caret }
 
-  const counters = [0, 0, 0]
+  const counters = new Array<number>(LEVEL_COUNT).fill(0)
   return rewriteMarkers(value, caret, (parsed) => {
     // A point at this level opens a new run for every level below it.
     for (let deeper = parsed.level + 1; deeper <= MAX_LEVEL; deeper += 1) {

@@ -32,8 +32,12 @@ export type Marker =
   | 'dash'
   | 'arrow'
 
-/** One marker per nesting level: main points, sub-points, sub-sub-points. */
-export type BulletLevels = [Marker, Marker, Marker]
+/**
+ * One marker per nesting level, from the main points down. Always
+ * `LEVEL_COUNT` long once loaded: styles saved with fewer levels are filled
+ * up by `fullLevels`.
+ */
+export type BulletLevels = Marker[]
 
 export type AccentKey =
   | 'indigo'

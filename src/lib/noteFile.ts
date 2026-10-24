@@ -1,5 +1,5 @@
 import type { Language, Note } from '../types'
-import { bulletsToMarkdown } from './bullets'
+import { bulletsToMarkdown, fullLevels } from './bullets'
 import { makeId, todayIso } from './id'
 import { isBulletLevels, isNote } from './storage'
 
@@ -149,7 +149,7 @@ function normalize(note: Note): Note {
     summary: note.summary ?? '',
     createdAt: note.createdAt ?? now,
     updatedAt: now,
-    bullets: isBulletLevels(note.bullets) ? note.bullets : null,
+    bullets: isBulletLevels(note.bullets) ? fullLevels(note.bullets) : null,
   }
 }
 
