@@ -540,7 +540,172 @@ const alsoFine: Record<Language, string> = {
     breuklijn breuklijnen evenaar poolcirkel poolcirkels breedtegraad
     breedtegraden lengtegraad lengtegraden migratiestroom migratiestromen
     klimaatverandering natuurramp natuurrampen overstroming overstromingen
-    droogte`,
+    droogte codons anticodon anticodons mutagenese recombinant recombinante
+    replicaties nucleotide nucleotiden nucleïnezuur nucleïnezuren desoxyribose
+    cytosine uracil purines pyrimidine pyrimidines basenpaar basenparen
+    basenparing complementair complementaire dubbelhelix terminator exon exons
+    splicing ribosoom ribosomen polymerase polymerasen helicase ligase ligasen
+    primase genexpressie genregulatie operon operons repressor repressoren
+    genotypes fenotypen fenotypes homozygoot homozygote heterozygoot
+    heterozygote intermediair intermediaire codominant codominantie
+    codominante monohybride dihybride stamboomanalyse geslachtsgebonden
+    autosoom autosomen autosomaal autosomale gonosoom gonosomen karyogram
+    karyogrammen karyotype karyotypen diploïd diploïde haploïd haploïde
+    polyploïdie triploïd chromatide chromatiden zusterchromatiden telomeer
+    telomeren kinetochoor spoelfiguur spoelfiguren metafase anafase telofase
+    interfase cytokinese celcyclus celcycli chiasmata tetrade tetraden
+    puntmutatie puntmutaties chromosoommutatie chromosoommutaties
+    genoommutatie translocatie substitutie substituties frameshift leesraam
+    leesramen trisomie monosomie mutageniteit carcinogeen carcinogenen
+    oncogenen tumorsuppressorgen elektroforese ggo transgeen transgene
+    biotechnologie epigenetica epigenetisch epigenetische methylering
+    genoombewerking eukaryoot eukaryoten eukaryote prokaryoot prokaryoten
+    prokaryote mitochondrion mitochondriën mitochondrie endoplasmatisch
+    reticulum golgiapparaat lysosoom lysosomen peroxisoom peroxisomen vacuolen
+    cytosol cytoskelet microtubuli microtubulus centriool centriolen
+    fosfolipide fosfolipiden fosfolipidendubbellaag dubbellaag kanaaleiwit
+    kanaaleiwitten transporteiwit transporteiwitten receptoreiwit
+    receptoreiwitten glycocalyx diffusie plasmolyse turgor turgordruk
+    endocytose exocytose fagocytose pinocytose hypertoon hypotoon isotonisch
+    hypertonisch hypotonisch concentratiegradiënt concentratiegradiënten
+    glycolyse krebscyclus citroenzuurcyclus elektronentransportketen
+    oxidatieve fosforylering pyrodruivenzuur pyruvaat melkzuurgisting
+    alcoholgisting fermentatie anaeroob anaerobe dissimilatie assimilatie
+    lichtreactie lichtreacties calvincyclus donkerreactie thylakoïde
+    thylakoïden stroma grana fotosysteem fotosystemen rubisco koolstoffixatie
+    activeringsenergie denaturatie gedenatureerd inhibitor inhibitoren coënzym
+    coënzymen eiwitsynthese peptidebinding polypeptide polypeptiden
+    quaternaire eiwitstructuur monosacharide monosachariden disacharide
+    disachariden polysacharide polysachariden fructose glycogeen cellulose
+    triglyceride triglyceriden hydrolyse condensatiereactie populatiedynamiek
+    populatiegrootte draagkracht biocenose biocenosen reducent reducenten
+    trofisch trofische voedselpiramide energiepiramide biomassapiramide
+    commensalisme mutualisme parasitisme pioniersoort pioniersoorten
+    climaxgemeenschap eutrofiëring bioaccumulatie biomagnificatie
+    fosforkringloop nitrificatie stikstoffixatie ammonificatie
+    biodiversiteitsverlies selectiedruk evolutietheorie darwinisme
+    neodarwinisme lamarckisme soortvorming allopatrisch allopatrische
+    sympatrisch sympatrische genenpoel genenpoelen foundereffect
+    bottleneckeffect flessenhalseffect rudimentair rudimentaire fylogenetisch
+    fylogenetische cladogram cladogrammen hominide hominiden hominine
+    homininen australopithecus adaptieve antigenen fagocyt fagocyten
+    macrofagen neutrofiel neutrofielen lymfocyt lymfocyten geheugencel
+    geheugencellen plasmacel plasmacellen killercel cytotoxisch cytotoxische
+    immuunrespons humorale ontstekingsreactie immunisatie antigeenpresentatie
+    cytokine cytokinen complementsysteem resusfactor agglutinatie lymfestelsel
+    dendrieten axonen myelineschede neurotransmitter neurotransmitters
+    acetylcholine actiepotentiaal actiepotentialen rustpotentiaal
+    depolarisatie repolarisatie hyperpolarisatie prikkelgeleiding reflexboog
+    reflexbogen sensorisch sensorische schakelneuron schakelneuronen
+    sympathisch parasympathisch orthosympathisch glucagon thyroxine cortisol
+    aldosteron groeihormoon terugkoppeling homeostase thermoregulatie
+    osmoregulatie nefron nefronen glomerulus verzamelbuis ultrafiltratie
+    terugresorptie urineleider urineleiders hartcyclus systole sinusknoop
+    hartminuutvolume slagvolume erytrocyt erytrocyten leukocyt leukocyten
+    trombocyt trombocyten bloedstolling fibrinogeen trombine alveole alveolen
+    bronchus bronchiën bronchiolen verteringsenzym verteringsenzymen amylase
+    lipase maagsap twaalfvingerige darmvlok darmvlokken peristaltiek
+    menstruatiecyclus follikel follikels luteum baarmoederslijmvlies
+    spermatogenese oögenese gametogenese zygoten huidmondje huidmondjes
+    sluitcel sluitcellen bladgroenkorrel bladgroenkorrels houtvaten bastvat
+    bastvaten vaatbundel vaatbundels worteldruk capillariteit fotoperiodisme
+    fototropie fototropisme geotropie geotropisme gravitropisme auxinen
+    gibberelline cytokinine abscisinezuur plantenhormoon plantenhormonen
+    kruisbestuiving zelfbestuiving endosperm zaadknop zaadknoppen
+    stuifmeelkorrel monocotyl dicotyl eenzaadlobbige tweezaadlobbige
+    meristemen binominale nomenclatuur archaea archaebacteriën eubacteriën
+    protist protisten protista bacteriofaag bacteriofagen retrovirussen
+    capside lytische lysogene elektronenmicroscoop lichtmicroscoop
+    geomorfologie geomorfologisch geomorfologische klimatologie klimatologisch
+    klimatologische hydrologie hydrologisch hydrologische bodemkunde
+    globalisering köppen klimaatclassificatie klimaatclassificaties
+    klimaatdiagram klimaatdiagrammen klimogram klimogrammen subtropisch
+    subtropische savanneklimaat steppeklimaat woestijnklimaat toendraklimaat
+    zeeklimaat landklimaat moessonklimaat hogedrukgebied hogedrukgebieden
+    lagedrukgebied lagedrukgebieden isotherm isothermen isohyeet isohyeten
+    passaatwinden westenwinden circulatiecel hadleycel ferrelcel
+    intertropische convergentiezone corioliseffect corioliskracht straalstroom
+    jetstream föhnwind stuwingsregen stijgingsregen convectieregen koufront
+    anticycloon niño niña albedo stralingsbalans insolatie neerslagtekort
+    neerslagoverschot evapotranspiratie oppervlakteafvoer grondwaterspiegel
+    grondwaterpeil watervoerende waterscheiding waterscheidingen rivierregime
+    rivierregimes hydrogram hydrogrammen afvoerregime hoefijzermeer
+    hoefijzermeren uiterwaarden overstromingsvlakte alluviaal alluviale
+    middenloop benedenloop strandwal strandwallen abrasie abrasieplatform
+    gletsjerdal zwerfsteen zwerfstenen drumlin drumlins esker eskers sandr
+    sandrs permafrost periglaciaal periglaciale interglaciaal vorstverwering
+    karstverschijnselen doline dolines stalactiet stalactieten stalagmiet
+    stalagmieten erosiebasis sedimentatiebekken accumulatie saltatie suspensie
+    massabeweging massabewegingen solifluctie aeolisch aeolische corrasie
+    barchaan barchanen bodemprofiel bodemprofielen bodemhorizont
+    bodemhorizonten humuslaag moedermateriaal podzol podzolen leemgrond
+    zandgrond kleigrond lössgrond bodemtextuur bodemstructuur textuurdriehoek
+    bodemerosie bodemdegradatie woestijnvorming desertificatie lithosfeer
+    asthenosfeer hydrosfeer biosfeer cryosfeer binnenkern buitenkern
+    discontinuïteit moho convectiestroom convectiestromen divergente
+    plaatgrens plaatgrenzen subductie subductiezone subductiezones riftvallei
+    riftvalleien oceaanrug oceaanruggen zeebodemspreiding diepzeetrog
+    mantelpluim stratovulkaan schildvulkaan schildvulkanen pyroclastisch
+    pyroclastische lahar lahars caldera calderas hypocentrum seismograaf
+    seismogram seismogrammen richterschaal momentmagnitude magnitude
+    stollingsgesteente stollingsgesteenten afzettingsgesteente
+    afzettingsgesteenten gesteentecyclus plooiingsgebergte synclinaal gondwana
+    laurasia continentverschuiving precambrium paleozoïcum mesozoïcum
+    cenozoïcum kwartair bevolkingspiramide bevolkingspiramides
+    bevolkingspiramiden geboortecijfer bevolkingsgroei vruchtbaarheidscijfer
+    kindersterfte migratiesaldo pushfactor pushfactoren pullfactor
+    pullfactoren afhankelijkheidsratio bevolkingsexplosie urbanisatiegraad
+    verstedelijkingsgraad suburbanisatie desurbanisatie reurbanisatie
+    megasteden agglomeratie agglomeraties conurbatie stadsrand
+    stadsvernieuwing randstad stadsgewest stadsgewesten verkeerscongestie
+    pendelarbeid mondialisering outsourcing offshoring delokalisatie
+    containerisatie handelsstroom handelsstromen wereldhandel
+    ontwikkelingsland ontwikkelingslanden groeilanden structuurplan
+    bestemmingsplan bestemmingsplannen gewestplan gewestplannen betonstop
+    verkavelingen lintbebouwing informatiesysteem kaartlezen kaartprojectie
+    kaartprojecties mercatorprojectie schaalstok coördinatenstelsel gradennet
+    equidistantie dwarsdoorsnede hoogteprofiel choropletenkaart orthofoto
+    teledetectie rasterkaart vectorkaart bufferanalyse kaartlaag kaartlagen
+    georeferentie akkerbouw plantagelandbouw zelfvoorzieningslandbouw
+    marktgerichte monocultuur monoculturen herbiciden agribusiness
+    voedselzekerheid landbouwareaal zwerflandbouw terrassenbouw hernieuwbare
+    hernieuwbaar windenergie getijdenenergie geothermie biomassa schaliegas
+    energiemix energietransitie koolstofneutraal klimaatneutraal delfstof
+    delfstoffen aardmetalen koolstofvoetafdruk broeikasgasemissie
+    klimaatakkoord anticlinaal anticlinalen synclinalen detritivoor
+    detritivoren gibberellinen monocotylen dicotylen trofieniveau
+    trofieniveaus kruisingsschema punnettvierkant allelfrequentie
+    allelfrequenties genfrequentie genfrequenties fenotypische genotypische
+    nucleolus kernlichaampje flagel flagellen trilhaar trilharen zweepdraad
+    chemosynthese autotroof autotrofe heterotroof heterotrofe chemoautotroof
+    fotoautotroof chemiosmose protonengradiënt elektronendrager
+    elektronendragers katabolisme glucosespiegel bloedglucosespiegel
+    bijnierschors bijniermerg doelwitcel doelwitcellen doelcel doelcellen
+    sarcomeer sarcomeren actine myosine spiervezel spiervezels myofibril
+    myofibrillen zintuigcellen slakkenhuis evenwichtsorgaan bijziendheid
+    inlandijs hellingsgraad hellingshoek reliëfkaart kustafslag
+    kustverdediging zandsuppletie deltawerken stormvloedkering waterbeheer
+    overstromingsgebied overstromingsgebieden sigmaplan inselberg mesa cuesta
+    hoogvlakte laagvlakte schiervlakte rivierterras rivierterrassen puinkegel
+    puinkegels puinwaaier kaarmeer trogdal trogdalen zandverstuiving stuifduin
+    paraboolduin paraboolduinen loopduin loopduinen hamada vervangingsniveau
+    fertiliteit fertiliteitscijfer bevolkingsprognose rurbanisatie
+    periurbanisatie stadsvlucht randgemeente randgemeenten centrumfunctie
+    centrumfuncties hinterland verzorgingsgebied transportas transportassen
+    containerschip containerschepen zeehavens tertiarisering
+    deïndustrialisering industrialisering kwartaire quartaire fairtrade
+    ontwikkelingshulp schuldenlast welvaartskloof armoedegrens ginicoëfficiënt
+    fotovoltaïsch fotovoltaïsche windturbine windturbines windmolenpark
+    windmolenparken stuwdam stuwdammen waterkrachtcentrale
+    waterkrachtcentrales bruinkool olieschalie teerzanden energieverbruik
+    energieafhankelijkheid energiezekerheid koolstofopslag koolstofafvang
+    waterstofeconomie emissiehandel emissierechten klimaatopwarming
+    zeeniveaustijging smeltwater luchtvervuiling hittegolven klimaatadaptatie
+    klimaatmitigatie koolstofput koolstofputten koolstofreservoir
+    oceaanverzuring thermohaliene zeestroming zeestromingen zeestroom
+    zeestromen biotechnologisch antibioticaresistentie multiresistent
+    multiresistente bacteriecultuur petrischaal voedingsbodem incubatietijd
+    zoönose zoönosen groepsimmuniteit boosterprik`,
 }
 
 /**
