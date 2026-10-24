@@ -1,4 +1,5 @@
-import type { Note, Settings } from '../types'
+import { markerOptions } from './bullets'
+import type { BulletLevels, Note, Settings } from '../types'
 
 const NOTES_KEY = 'cornell.notes.v1'
 const SETTINGS_KEY = 'cornell.settings.v1'
@@ -12,7 +13,8 @@ export const defaultSettings: Settings = {
   minFontSize: 12,
   maxFontSize: 22,
   cuesRatio: 30,
-  bulletStyle: 'dot',
+  bulletsOn: true,
+  bulletLevels: ['dot', 'circle', 'square'],
   autocorrect: true,
   shortcuts: {
     gotoCues: 'mod+1',
@@ -23,6 +25,7 @@ export const defaultSettings: Settings = {
     home: 'escape',
     help: '?',
     review: 'mod+r',
+    fullscreen: 'mod+shift+f',
     print: 'mod+p',
     undo: 'mod+z',
     redo: 'mod+y',
@@ -43,8 +46,32 @@ function safeParse<T>(raw: string | null, fallback: T): T {
 export function loadNotes(): Note[] {
   const notes = safeParse<Note[]>(localStorage.getItem(NOTES_KEY), [])
   if (!Array.isArray(notes)) return []
-  // Notes written before subjects existed have no `subject` field.
-  return notes.filter(isNote).map((note) => ({ ...note, subject: note.subject ?? '' }))
+  // Notes written before subjects existed have no `subject` field, and those
+  // written before per-note bullets have no `bullets`.
+  return notes.filter(isNote).map((note) => ({
+    ...note,
+    subject: note.subject ?? '',
+    bullets: isBulletLevels(note.bullets) ? note.bullets : null,
+  }))
+}
+
+/** True of a valid per-level bullet style: three known markers. */
+export function isBulletLevels(value: unknown): value is BulletLevels {
+  return (
+    Array.isArray(value) &&
+    value.length === 3 &&
+    value.every((marker) => markerOptions.includes(marker))
+  )
+}
+
+/**
+ * What the single bullet choice of earlier versions meant, level by level.
+ * Moved over once, so nobody's notes change look after the update.
+ */
+const fromOldStyle: Record<string, BulletLevels> = {
+  dot: ['dot', 'circle', 'square'],
+  dash: ['dash', 'dash', 'dash'],
+  number: ['number', 'dot', 'circle'],
 }
 
 export function saveNotes(notes: Note[]): void {
@@ -66,7 +93,20 @@ export function loadSettings(): Settings {
   // themselves is left alone.
   if (shortcuts.redo === 'mod+shift+z') shortcuts.redo = defaultSettings.shortcuts.redo
 
-  return { ...defaultSettings, ...stored, shortcuts }
+  // Bullets used to be one choice for every level: off, •, - or 1.
+  const { bulletStyle, ...rest } = stored as Partial<Settings> & {
+    bulletStyle?: string
+  }
+  const bullets: Partial<Settings> = {}
+  if (bulletStyle !== undefined && rest.bulletLevels === undefined) {
+    bullets.bulletsOn = bulletStyle !== 'off'
+    bullets.bulletLevels = fromOldStyle[bulletStyle] ?? defaultSettings.bulletLevels
+  }
+  if (rest.bulletLevels !== undefined && !isBulletLevels(rest.bulletLevels)) {
+    bullets.bulletLevels = defaultSettings.bulletLevels
+  }
+
+  return { ...defaultSettings, ...rest, ...bullets, shortcuts }
 }
 
 export function saveSettings(settings: Settings): void {

@@ -17,10 +17,11 @@ import {
 import type { Correction } from '../lib/autocorrect'
 import { caretAfterChange, useUndoHistory } from '../hooks/useUndoHistory'
 import type { Snapshot } from '../hooks/useUndoHistory'
-import { onEnter, onIndent, renumber } from '../lib/bullets'
+import { counts, onEnter, onIndent, renumber, restyle } from '../lib/bullets'
 import { formatCombo, isApplePlatform } from '../lib/shortcuts'
 import { download, noteToMarkdown, safeFilename } from '../lib/noteFile'
-import type { Note, Section } from '../types'
+import type { BulletLevels, Note, Section } from '../types'
+import { describeLevels, NoteBulletsPanel } from './BulletPicker'
 import {
   BackIcon,
   CheckIcon,
@@ -71,6 +72,7 @@ export function Editor({
   const { updateNote, deleteNote, settings, saveState, t } = useApp()
   const [active, setActive] = useState<Section>('notes')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showBullets, setShowBullets] = useState(false)
   const [reviewing, setReviewing] = useState(false)
   const [revealed, setRevealed] = useState({ notes: false, summary: false })
 
@@ -274,6 +276,26 @@ export function Editor({
 
   const cuesWidth = `${settings.cuesRatio}%`
 
+  // The note's own bullets win; otherwise the settings, unless they are off.
+  const general = settings.bulletsOn ? settings.bulletLevels : null
+  const levels = note.bullets ?? general
+
+  /**
+   * Give the note a style of its own, or hand it back to the settings, and
+   * rewrite the bullets already in it to match. Without that the old lines
+   * keep the old markers and only new ones change.
+   */
+  function changeNoteBullets(next: BulletLevels | null) {
+    const target = next ?? general
+    updateNote(note.id, {
+      bullets: next,
+      ...(target && {
+        cues: restyle(note.cues, target),
+        notes: restyle(note.notes, target),
+      }),
+    })
+  }
+
   return (
     <div
       ref={rootRef}
@@ -367,7 +389,7 @@ export function Editor({
           type="button"
           onClick={() => onFullscreen(true)}
           className={cx(buttonGhost, 'px-3 py-2')}
-          title={`${t('editor.fullscreen')} — ${t('editor.fullscreenHint')}`}
+          title={`${t('editor.fullscreen')} (${formatCombo(settings.shortcuts.fullscreen)}) — ${t('editor.fullscreenHint')}`}
         >
           <ExpandIcon className="h-5 w-5" />
           <span className="hidden sm:inline">{t('editor.fullscreen')}</span>
@@ -464,13 +486,48 @@ export function Editor({
           placeholder={t('editor.titlePlaceholder')}
           className="min-w-0 flex-1 bg-transparent text-xl font-semibold outline-none placeholder:font-normal placeholder:text-[var(--text-muted)]"
         />
-        <input
-          type="date"
-          value={note.date}
-          onChange={(event) => updateNote(note.id, { date: event.target.value })}
-          className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--accent)]"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={note.date}
+            onChange={(event) => updateNote(note.id, { date: event.target.value })}
+            className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--accent)]"
+          />
+          <button
+            type="button"
+            onClick={() => setShowBullets((current) => !current)}
+            aria-expanded={showBullets}
+            className={cx(
+              'inline-flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm transition hover:bg-[var(--surface-2)]',
+              showBullets
+                ? 'border-[var(--accent)] text-[var(--accent)]'
+                : 'border-[var(--border)]',
+            )}
+            title={t('bullets.note')}
+          >
+            <span className="hidden sm:inline">{t('bullets.note')}</span>
+            {/* The markers in use, so you can tell the style without opening it. */}
+            <span className="font-semibold whitespace-pre">
+              {levels ? describeLevels(levels) : t('bullets.off')}
+            </span>
+          </button>
+        </div>
       </div>
+
+      {showBullets && (
+        <div
+          className={cx(
+            'fade-up rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow)]',
+            fullscreen && 'hidden',
+          )}
+        >
+          <NoteBulletsPanel
+            value={note.bullets}
+            general={general}
+            onChange={changeNoteBullets}
+          />
+        </div>
+      )}
 
       <div className="note-row flex flex-col gap-3 lg:flex-row lg:items-stretch">
         <SectionBox
@@ -480,7 +537,7 @@ export function Editor({
           placeholder={t('editor.cuesPlaceholder')}
           title={t('diagram.cues')}
           textareaRef={refs.cues}
-          bullets
+          levels={levels}
           readOnly={reviewing}
           style={{ flexBasis: cuesWidth }}
           onChange={(value) => updateNote(note.id, { cues: value })}
@@ -496,7 +553,7 @@ export function Editor({
           placeholder={t('editor.notesPlaceholder')}
           title={t('diagram.notes')}
           textareaRef={refs.notes}
-          bullets
+          levels={levels}
           readOnly={reviewing}
           masked={isMasked('notes')}
           revealLabel={t('review.revealNotes')}
@@ -545,7 +602,7 @@ function SectionBox({
   title,
   placeholder,
   textareaRef,
-  bullets = false,
+  levels = null,
   readOnly = false,
   masked = false,
   revealLabel,
@@ -564,7 +621,8 @@ function SectionBox({
   title: string
   placeholder: string
   textareaRef: RefObject<HTMLTextAreaElement | null>
-  bullets?: boolean
+  /** The markers for automatic bullets here, or null for none. */
+  levels?: BulletLevels | null
   readOnly?: boolean
   masked?: boolean
   revealLabel?: string
@@ -636,7 +694,8 @@ function SectionBox({
     textareaRef.current?.setSelectionRange(caret, caret)
   }, [value, textareaRef])
 
-  const bulletsOn = bullets && settings.bulletStyle !== 'off' && !readOnly
+  const bulletLevels = readOnly ? null : levels
+  const bulletsOn = bulletLevels !== null
 
   // What the header shows instead of the character count. A live suggestion
   // comes first: the confirmation of the last one is only still there because
@@ -737,14 +796,14 @@ function SectionBox({
         !event.metaKey
 
       const edit = plainEnter
-        ? onEnter(text, caret, selectionEnd, settings.bulletStyle)
+        ? onEnter(text, caret, selectionEnd, bulletLevels)
         : event.altKey &&
             (event.key === 'ArrowRight' || event.key === 'ArrowLeft')
           ? onIndent(
               text,
               caret,
               selectionEnd,
-              settings.bulletStyle,
+              bulletLevels,
               event.key === 'ArrowRight' ? 1 : -1,
             )
           : null
@@ -752,7 +811,7 @@ function SectionBox({
       if (edit) {
         event.preventDefault()
         // A new item shifts every number below it along by one.
-        const fixed = renumber(edit.value, edit.caret, settings.bulletStyle)
+        const fixed = renumber(edit.value, edit.caret, bulletLevels)
         pendingCaret.current = fixed.caret
         if (applied) flashDone(applied)
         onChange(fixed.value)
@@ -766,7 +825,7 @@ function SectionBox({
       event.preventDefault()
       const typed = event.key === 'Enter' ? '\n' : event.key
       const next = text.slice(0, caret) + typed + text.slice(selectionEnd)
-      const fixed = renumber(next, caret + typed.length, settings.bulletStyle)
+      const fixed = renumber(next, caret + typed.length, bulletLevels)
       pendingCaret.current = fixed.caret
       flashDone(applied)
       onChange(fixed.value)
@@ -786,8 +845,8 @@ function SectionBox({
     // up while you type the next word makes it look like it belongs to that
     // one instead.
     if (done) setDone(null)
-    if (bulletsOn && settings.bulletStyle === 'number') {
-      const fixed = renumber(el.value, el.selectionStart, settings.bulletStyle)
+    if (counts(bulletLevels)) {
+      const fixed = renumber(el.value, el.selectionStart, bulletLevels)
       if (fixed.value !== el.value) {
         pendingCaret.current = fixed.caret
         onChange(fixed.value)

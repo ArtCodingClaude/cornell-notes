@@ -6,11 +6,11 @@ import { actionOrder, eventToCombo, formatCombo } from '../lib/shortcuts'
 import type {
   AccentKey,
   ActionKey,
-  BulletStyle,
   Language,
   ThemeMode,
 } from '../types'
 import type { TranslationKey } from '../i18n/translations'
+import { BulletPicker } from './BulletPicker'
 import { BackIcon, DownloadIcon, TrashIcon, UploadIcon } from './Icons'
 import {
   buttonGhost,
@@ -123,18 +123,35 @@ export function SettingsView({ onBack, onImport }: Props) {
       </Panel>
 
       <Panel title={t('settings.text')}>
-        <Row title={t('settings.bullets')} hint={t('settings.bulletsDesc')}>
-          <Segmented<BulletStyle>
-            value={settings.bulletStyle}
-            onChange={(bulletStyle) => updateSettings({ bulletStyle })}
-            options={[
-              { value: 'off', label: t('bullets.off') },
-              { value: 'dot', label: '•' },
-              { value: 'dash', label: '–' },
-              { value: 'number', label: '1.' },
-            ]}
-          />
-        </Row>
+        <div className="flex flex-col gap-4">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={settings.bulletsOn}
+              onChange={(event) =>
+                updateSettings({ bulletsOn: event.target.checked })
+              }
+              className="mt-1 h-4 w-4 cursor-pointer accent-[var(--accent)]"
+            />
+            <span>
+              <span className={label}>{t('settings.bullets')}</span>
+              <span className={cx(muted, 'block')}>
+                {t('settings.bulletsDesc')}
+              </span>
+            </span>
+          </label>
+          {/* Only new lines take a change made here: rewriting the bullets
+              of every note at once would be a surprise. A note's own style
+              is changed from inside the note. */}
+          {settings.bulletsOn && (
+            <div className="sm:pl-7">
+              <BulletPicker
+                value={settings.bulletLevels}
+                onChange={(bulletLevels) => updateSettings({ bulletLevels })}
+              />
+            </div>
+          )}
+        </div>
 
         <label className="flex cursor-pointer items-start gap-3">
           <input

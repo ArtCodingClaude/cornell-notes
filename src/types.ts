@@ -8,6 +8,8 @@ export type Note = {
   summary: string
   createdAt: number
   updatedAt: number
+  /** This note's own bullets. Null follows the general setting. */
+  bullets: BulletLevels | null
 }
 
 export type Section = 'cues' | 'notes' | 'summary'
@@ -17,12 +19,21 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 export type Language = 'en' | 'fr' | 'nl'
 
 /**
- * Marker put in front of a line when automatic bullets are on.
- *
- * `number` counts its outermost level (1., 2., 3.) and falls back to bullets
- * for anything nested under a numbered point.
+ * What a list item starts with. The first three count their items — 1. 2.,
+ * a) b), A. B. — the rest put the same sign in front of every one.
  */
-export type BulletStyle = 'off' | 'dot' | 'dash' | 'number'
+export type Marker =
+  | 'number'
+  | 'lower'
+  | 'upper'
+  | 'dot'
+  | 'circle'
+  | 'square'
+  | 'dash'
+  | 'arrow'
+
+/** One marker per nesting level: main points, sub-points, sub-sub-points. */
+export type BulletLevels = [Marker, Marker, Marker]
 
 export type AccentKey =
   | 'indigo'
@@ -41,6 +52,7 @@ export type ActionKey =
   | 'home'
   | 'help'
   | 'review'
+  | 'fullscreen'
   | 'print'
   | 'undo'
   | 'redo'
@@ -55,7 +67,9 @@ export type Settings = {
   maxFontSize: number
   cuesRatio: number // width of the cue column, in percent
   /** Automatic bullets in the cue and note columns. */
-  bulletStyle: BulletStyle
+  bulletsOn: boolean
+  /** The markers used by every note that has no style of its own. */
+  bulletLevels: BulletLevels
   /** Fix common misspellings as a word is finished. */
   autocorrect: boolean
   shortcuts: Record<ActionKey, string>

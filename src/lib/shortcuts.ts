@@ -9,6 +9,7 @@ export const actionOrder: ActionKey[] = [
   'undo',
   'redo',
   'review',
+  'fullscreen',
   'print',
   'home',
   'help',

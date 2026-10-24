@@ -1,4 +1,4 @@
-import type { BulletStyle } from '../types'
+import type { BulletLevels, Marker } from '../types'
 
 /**
  * Automatic bullets for the cue and note columns.
@@ -6,20 +6,58 @@ import type { BulletStyle } from '../types'
  * The markers are real characters in the note text, not decoration: what you
  * see in the box is what gets saved, exported and printed. `bulletsToMarkdown`
  * turns them back into a plain "- " list on export.
+ *
+ * Each nesting level has its own marker, chosen in the settings or per note:
+ * numbered main points with lettered sub-points, dots everywhere, and so on.
+ * Wherever `levels` is null below, bullets are off.
  */
 
-/**
- * Markers per nesting level. Level 0 is the outermost.
- *
- * The numbered style only counts its outermost level; what hangs under a
- * numbered point is detail, and reads better as plain bullets than as a
- * second row of numbers. The "1." here is a placeholder — `renumber` gives
- * every item its real number once the edit has been made.
- */
-const markers: Record<Exclude<BulletStyle, 'off'>, string[]> = {
-  dot: ['•', '◦', '▪'],
-  dash: ['-', '-', '-'],
-  number: ['1.', '•', '◦'],
+/** Every marker on offer, in the order the pickers show them. */
+export const markerOptions: Marker[] = [
+  'number',
+  'lower',
+  'upper',
+  'dot',
+  'circle',
+  'square',
+  'dash',
+  'arrow',
+]
+
+/** The markers that put the same sign in front of every item. */
+const signs: Record<Exclude<Marker, Counted>, string> = {
+  dot: '•',
+  circle: '◦',
+  square: '▪',
+  dash: '-',
+  arrow: '→',
+}
+
+type Counted = 'number' | 'lower' | 'upper'
+
+/** True of a marker that numbers its items rather than repeating a sign. */
+export function isCounted(marker: Marker): marker is Counted {
+  return marker === 'number' || marker === 'lower' || marker === 'upper'
+}
+
+/** 1 → a, 26 → z, 27 → aa: a list long enough to run out of letters goes on. */
+function letters(n: number): string {
+  let out = ''
+  let rest = n
+  while (rest > 0) {
+    rest -= 1
+    out = String.fromCharCode(97 + (rest % 26)) + out
+    rest = Math.floor(rest / 26)
+  }
+  return out
+}
+
+/** The marker for the n-th item of a list, counting from 1. */
+export function markerText(marker: Marker, n = 1): string {
+  if (marker === 'number') return `${n}.`
+  if (marker === 'lower') return `${letters(n)})`
+  if (marker === 'upper') return `${letters(n).toUpperCase()}.`
+  return signs[marker]
 }
 
 /** One nesting level of indentation. Two spaces is what Markdown expects. */
@@ -27,15 +65,20 @@ export const INDENT = '  '
 
 export const MAX_LEVEL = 2
 
-// Every marker we recognise when reading a line back, whatever the style it
-// was written in — a note may have been imported, or the setting changed.
+// Every marker we recognise when reading a line back, whatever it was
+// written with — a note may have been imported, or its style changed.
 // Numbers stop at three digits so that a line opening on a year ("1815. La
-// bataille…") is left alone rather than swallowed into a list.
-const bulletLine = /^([ \t]*)(\d{1,3}[.)]|[•◦▪\-*]) (.*)$/
+// bataille…") is left alone rather than swallowed into a list. Letters stop
+// at two and must all be the same case, so "Mr. Dupont" is not a list item.
+const bulletLine =
+  /^([ \t]*)(\d{1,3}[.)]|[a-z]{1,2}\)|[A-Z]{1,2}\.|[•◦▪\-*→]) (.*)$/
 
-/** True of "7." or "12)" — a marker that carries a number we may rewrite. */
-function isNumbered(marker: string): boolean {
-  return /^\d/.test(marker)
+/** Which kind of marker a line was written with, as far as counting goes. */
+function kindOf(marker: string): Counted | 'sign' {
+  if (/^\d/.test(marker)) return 'number'
+  if (/^[a-z]/.test(marker)) return 'lower'
+  if (/^[A-Z]/.test(marker)) return 'upper'
+  return 'sign'
 }
 
 type ParsedLine = { indent: string; level: number; marker: string; text: string }
@@ -46,20 +89,15 @@ export function parseBullet(line: string): ParsedLine | null {
   const indent = match[1]
   return {
     indent,
-    level: Math.floor(indent.length / INDENT.length),
+    level: Math.min(Math.floor(indent.length / INDENT.length), MAX_LEVEL),
     marker: match[2],
     text: match[3],
   }
 }
 
-export function markerFor(style: BulletStyle, level: number): string {
-  if (style === 'off') return ''
-  const set = markers[style]
-  return set[Math.min(Math.max(level, 0), set.length - 1)]
-}
-
-function prefixFor(style: BulletStyle, level: number): string {
-  return INDENT.repeat(Math.max(level, 0)) + markerFor(style, level) + ' '
+function prefixFor(levels: BulletLevels, level: number): string {
+  const clamped = Math.min(Math.max(level, 0), MAX_LEVEL)
+  return INDENT.repeat(clamped) + markerText(levels[clamped]) + ' '
 }
 
 /** A replacement value for the whole field, plus where the caret should land. */
@@ -71,29 +109,24 @@ function lineAround(value: string, caret: number): { start: number; end: number 
   return { start, end: next === -1 ? value.length : next }
 }
 
+/** True when some level counts its items, so the numbers need keeping up. */
+export function counts(levels: BulletLevels | null): boolean {
+  return levels !== null && levels.some(isCounted)
+}
+
 /**
- * Puts a numbered list back in order: 1, 2, 3.
+ * Rewrites every marker in a field, line by line, and says where the caret
+ * moved to.
  *
- * The numbers are real text, so inserting or deleting a line anywhere leaves
- * everything below it wrong. Rather than patch the lines around each edit,
- * the whole field is renumbered after every change — it is a handful of lines
- * and it cannot drift out of step.
- *
- * The count runs over the whole section and nothing resets it: a blank line,
- * a title or a sub-level in the middle is a pause in the list, not the end of
- * it, so the next numbered line carries on from the last number rather than
- * dropping back to 1.
- *
- * Sub-levels are bullets in this style and are left exactly as they are.
+ * `pick` gets each list line and returns the marker it should have, or null
+ * to leave it as it is. Lines are rebuilt from the start, so a marker that
+ * grows ("9." to "10.") pushes the caret along with it.
  */
-export function renumber(
+function rewriteMarkers(
   value: string,
   caret: number,
-  style: BulletStyle,
+  pick: (parsed: ParsedLine) => string | null,
 ): Edit {
-  if (style !== 'number') return { value, caret }
-
-  let counter = 0
   let start = 0 // where the current line begins in the original value
   let shift = 0 // characters gained or lost above the caret so far
   // Set only when the caret was sitting inside a marker being rewritten.
@@ -101,14 +134,9 @@ export function renumber(
 
   const lines = value.split('\n').map((line) => {
     const parsed = parseBullet(line)
-    let rewritten = line
-
-    if (!parsed) {
-      // A line without a marker is skipped over, keeping the count.
-    } else if (parsed.level === 0) {
-      counter += 1
-      rewritten = `${counter}. ${parsed.text}`
-    }
+    const marker = parsed ? pick(parsed) : null
+    const rewritten =
+      parsed && marker !== null ? `${parsed.indent}${marker} ${parsed.text}` : line
 
     if (parsed && rewritten !== line) {
       // The marker runs from the start of the line to the start of the text.
@@ -131,6 +159,55 @@ export function renumber(
 }
 
 /**
+ * Puts the counted levels back in order: 1, 2, 3 — or a, b, c.
+ *
+ * The numbers are real text, so inserting or deleting a line anywhere leaves
+ * everything below it wrong. Rather than patch the lines around each edit,
+ * the whole field is renumbered after every change — it is a handful of lines
+ * and it cannot drift out of step.
+ *
+ * The main points count over the whole section and nothing resets them: a
+ * blank line or a title in the middle is a pause in the list, not the end of
+ * it. A sub-level starts again from the beginning under each new point above
+ * it, the way a), b) start again under every number.
+ *
+ * Only lines already written in the counted kind are touched, so a dash in a
+ * lettered level, or a line that only looks like a list, is left alone.
+ */
+export function renumber(
+  value: string,
+  caret: number,
+  levels: BulletLevels | null,
+): Edit {
+  if (!levels || !counts(levels)) return { value, caret }
+
+  const counters = [0, 0, 0]
+  return rewriteMarkers(value, caret, (parsed) => {
+    // A point at this level opens a new run for every level below it.
+    for (let deeper = parsed.level + 1; deeper <= MAX_LEVEL; deeper += 1) {
+      counters[deeper] = 0
+    }
+    const wanted = levels[parsed.level]
+    if (!isCounted(wanted) || kindOf(parsed.marker) !== wanted) return null
+    counters[parsed.level] += 1
+    return markerText(wanted, counters[parsed.level])
+  })
+}
+
+/**
+ * Gives every list line in a field the marker its level now calls for.
+ *
+ * Used when a note changes style, so the bullets already written match the
+ * new ones instead of leaving the note half in one style and half in another.
+ */
+export function restyle(value: string, levels: BulletLevels): string {
+  const marked = rewriteMarkers(value, 0, (parsed) =>
+    markerText(levels[parsed.level]),
+  )
+  return renumber(marked.value, 0, levels).value
+}
+
+/**
  * Enter was pressed. Returns null to let the browser insert a plain newline.
  *
  * Finishing a line turns it into the first item of a list, so the bullet
@@ -141,9 +218,9 @@ export function onEnter(
   value: string,
   start: number,
   end: number,
-  style: BulletStyle,
+  levels: BulletLevels | null,
 ): Edit | null {
-  if (style === 'off') return null
+  if (!levels) return null
   if (start !== end) return null // a selection: leave it to the browser
 
   const line = lineAround(value, start)
@@ -154,7 +231,7 @@ export function onEnter(
     if (parsed.text.trim() === '') {
       // An empty bullet means "I am done with this list".
       if (parsed.level > 0) {
-        const prefix = prefixFor(style, parsed.level - 1)
+        const prefix = prefixFor(levels, parsed.level - 1)
         return {
           value: value.slice(0, line.start) + prefix + value.slice(line.end),
           caret: line.start + prefix.length,
@@ -166,7 +243,9 @@ export function onEnter(
       }
     }
 
-    const prefix = '\n' + parsed.indent + markerFor(style, parsed.level) + ' '
+    // The new item takes its level's marker; a counted one gets its real
+    // number once `renumber` has run over the field.
+    const prefix = '\n' + parsed.indent + markerText(levels[parsed.level]) + ' '
     return {
       value: value.slice(0, start) + prefix + value.slice(start),
       caret: start + prefix.length,
@@ -176,7 +255,7 @@ export function onEnter(
   // Blank line, nothing to turn into a list item.
   if (text.trim() === '') return null
 
-  const prefix = prefixFor(style, 0)
+  const prefix = prefixFor(levels, 0)
   const marked = value.slice(0, line.start) + prefix + value.slice(line.start)
   const caret = start + prefix.length
   return {
@@ -190,10 +269,10 @@ export function onIndent(
   value: string,
   start: number,
   end: number,
-  style: BulletStyle,
+  levels: BulletLevels | null,
   direction: 1 | -1,
 ): Edit | null {
-  if (style === 'off') return null
+  if (!levels) return null
   if (start !== end) return null
 
   const line = lineAround(value, start)
@@ -204,7 +283,7 @@ export function onIndent(
   const level = Math.min(Math.max(parsed.level + direction, 0), MAX_LEVEL)
   if (level === parsed.level) return null
 
-  const replacement = prefixFor(style, level) + parsed.text
+  const replacement = prefixFor(levels, level) + parsed.text
   return {
     value: value.slice(0, line.start) + replacement + value.slice(line.end),
     caret: Math.max(line.start, start + replacement.length - text.length),
@@ -218,8 +297,9 @@ export function bulletsToMarkdown(text: string): string {
     .map((line) => {
       const parsed = parseBullet(line)
       if (!parsed) return line
-      // Markdown has ordered lists too, so a numbered item stays numbered.
-      const marker = isNumbered(parsed.marker) ? parsed.marker : '-'
+      // Markdown has numbered lists too, so a numbered item stays numbered.
+      // It has no lettered ones: those become plain bullets.
+      const marker = kindOf(parsed.marker) === 'number' ? parsed.marker : '-'
       return INDENT.repeat(parsed.level) + marker + ' ' + parsed.text
     })
     .join('\n')

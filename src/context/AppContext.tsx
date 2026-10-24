@@ -171,6 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       summary: '',
       createdAt: now,
       updatedAt: now,
+      bullets: null,
     }
     setNotes((current) => [note, ...current])
     scheduleSave()

@@ -1,7 +1,7 @@
 import type { Language, Note } from '../types'
 import { bulletsToMarkdown } from './bullets'
 import { makeId, todayIso } from './id'
-import { isNote } from './storage'
+import { isBulletLevels, isNote } from './storage'
 
 const headings: Record<Language, { cues: string; notes: string; summary: string }> =
   {
@@ -108,6 +108,9 @@ export function markdownToNote(text: string): Note | null {
     summary: trim(buckets.summary),
     createdAt: now,
     updatedAt: now,
+    // Markdown has no place for a style, so an imported note follows the
+    // general setting.
+    bullets: null,
   }
 }
 
@@ -146,6 +149,7 @@ function normalize(note: Note): Note {
     summary: note.summary ?? '',
     createdAt: note.createdAt ?? now,
     updatedAt: now,
+    bullets: isBulletLevels(note.bullets) ? note.bullets : null,
   }
 }
 

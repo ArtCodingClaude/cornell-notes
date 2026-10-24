@@ -108,6 +108,10 @@ export default function App() {
             setCommand({ action, nonce: Date.now() + Math.random() })
           }
           break
+        case 'fullscreen':
+          // The same key goes in and comes back out; Escape also leaves.
+          if (view === 'editor') setFocusMode((current) => !current)
+          break
         case 'home':
           // Escape peels one layer off at a time: full screen first, so it
           // never closes the note you were writing in.
