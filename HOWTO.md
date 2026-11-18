@@ -1,7 +1,7 @@
 # HOWTO — les commandes de ce projet
 
 Toutes les commandes se tapent dans le **terminal**, dans le dossier du projet
-(`C:\Users\Arthur\Desktop\Projet Site Web`).
+(`C:\Users\Arthur\Projets Claude\Projet Site Web`).
 
 ---
 
@@ -138,3 +138,120 @@ Dans le navigateur de chaque visiteur (`localStorage`), pas sur un serveur. Conc
 - Si tu vides les données de ton navigateur, elles disparaissent.
 - Le bouton **Exporter** dans les réglages télécharge tout dans un fichier `.json` —
   c'est la sauvegarde.
+
+---
+
+## Le chat avec Claude (serveur Supabase)
+
+Le chat passe par une *Edge Function* Supabase appelée `chat` (un petit programme qui
+tourne sur les serveurs de Supabase, pas dans le navigateur). Elle garde la clé
+Anthropic secrète, vérifie le code d'accès et le compte de la personne, et limite à
+**30 messages par jour et par personne**.
+
+Les fichiers :
+
+- `supabase/functions/chat/index.ts` — la fonction elle-même
+- `supabase/migrations/…_create_usage.sql` — la table `usage` qui compte les messages
+- `supabase/config.toml` — les réglages Supabase du projet
+
+Toutes les commandes `npx supabase …` téléchargent l'outil Supabase la première fois
+(rien à installer). Tape-les dans le terminal, dans le dossier du projet.
+
+### 1. Créer le projet (une seule fois, à la main)
+
+1. Va sur **https://supabase.com**, crée un compte, puis **New project**.
+2. Choisis un mot de passe de base de données et **garde-le** (gestionnaire de mots de
+   passe) : la commande `link` le demandera.
+3. Région : la plus proche de toi (par ex. *Central EU (Frankfurt)*).
+4. Une fois le projet créé, note sa **Project ref** : c'est le code dans l'adresse du
+   tableau de bord, `supabase.com/dashboard/project/`**`abcdefghijklmnop`**.
+
+### 2. Se connecter et relier le dossier au projet
+
+```
+npx supabase login
+```
+
+Ça ouvre le navigateur pour te connecter. Succès : `You are now logged in.`
+
+```
+npx supabase link --project-ref TA_PROJECT_REF
+```
+
+Remplace `TA_PROJECT_REF` par le code noté plus haut. Il demande le mot de passe de la
+base de données. Succès : `Finished supabase link.`
+
+### 3. Créer la table `usage`
+
+```
+npx supabase db push
+```
+
+Il liste la migration et demande confirmation (`Y`). Succès : `Finished supabase db push.`
+
+### 4. Enregistrer les secrets
+
+Les secrets ne doivent **jamais** être tapés directement dans une commande (PowerShell
+garde l'historique de ce que tu tapes) ni enregistrés dans un fichier suivi par git.
+La méthode propre :
+
+1. Crée un fichier `supabase/.env` (il est ignoré par git, il ne partira pas sur GitHub)
+   avec ces deux lignes :
+
+   ```
+   ANTHROPIC_API_KEY=colle-ici-ta-cle-anthropic
+   ACCESS_CODE=choisis-un-code-d-acces
+   ```
+
+2. Envoie-les à Supabase :
+
+   ```
+   npx supabase secrets set --env-file supabase/.env
+   ```
+
+   Succès : `Finished supabase secrets set.`
+
+3. **Supprime** `supabase/.env` ensuite : les secrets sont maintenant chez Supabase,
+   plus besoin de les garder sur ton ordinateur.
+
+Pour vérifier (ça affiche les noms, pas les valeurs) :
+
+```
+npx supabase secrets list
+```
+
+### 5. Publier la fonction
+
+```
+npx supabase functions deploy chat --no-verify-jwt
+```
+
+Succès : `Deployed Functions on project … : chat`. À relancer à chaque modification de
+`index.ts`.
+
+`--no-verify-jwt` laisse passer les requêtes `OPTIONS` du navigateur (le « pré-vol »
+CORS, qui n'a jamais de jeton). La fonction vérifie quand même elle-même que la personne
+est connectée.
+
+### 6. Créer les comptes des 5 personnes (à la main)
+
+Dans le tableau de bord Supabase :
+
+1. **Authentication → Users → Add user → Create new user** : email + mot de passe,
+   coche **Auto Confirm User**. Recommence pour chaque personne.
+2. **Authentication → Sign In / Providers** : désactive **Allow new users to sign up**,
+   pour que personne d'autre ne puisse se créer un compte.
+
+### Où voir les erreurs du serveur
+
+Tableau de bord Supabase → **Edge Functions → chat → Logs**. C'est un **troisième**
+endroit, différent du terminal et de la console du navigateur.
+
+### Ce que l'app devra envoyer
+
+- `POST` vers `https://TA_PROJECT_REF.supabase.co/functions/v1/chat`
+- en-têtes : `x-access-code` (le code d'accès) et `Authorization: Bearer <jeton de
+  connexion de la personne>`
+- corps : `{ "messages": [{ "role": "user", "content": "…" }] }`
+- réponse en streaming : `meta` (messages restants), puis des `text`, puis `done`.
+  Au-delà de 30 messages : erreur `429` avec `remaining: 0`.
