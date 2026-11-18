@@ -148,6 +148,15 @@ tourne sur les serveurs de Supabase, pas dans le navigateur). Elle garde la clé
 Anthropic secrète, vérifie le code d'accès et le compte de la personne, et limite à
 **30 messages par jour et par personne**.
 
+**Ton projet :** `cornell-notes` (Project ref `hixvrgrdaazwthfrixgs`)
+**Adresse de la fonction :** https://hixvrgrdaazwthfrixgs.supabase.co/functions/v1/chat
+
+Il a été configuré via le site Supabase le 18/11/2026 : les étapes 1, 3 et 5
+ci-dessous sont faites, ainsi que le point 2 de l'étape 6 (inscriptions coupées).
+L'étape 2 n'est utile que pour redéployer depuis le terminal. Il reste : les deux
+secrets (étape 4, ou directement sur le site dans Edge Functions → Secrets) et les
+5 comptes (étape 6, point 1).
+
 Les fichiers :
 
 - `supabase/functions/chat/index.ts` — la fonction elle-même
